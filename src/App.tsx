@@ -10,6 +10,7 @@ import Register from "./pages/Register";
 import Fellowship from "./pages/Fellowship";
 import Speakers from "./pages/Speakers";
 import Schedule from "./pages/Schedule";
+import Scholarship from "./pages/Scholarship";
 import PlantASeed from "./pages/PlantASeed";
 import Admin from "./pages/Admin";
 import AdminLogin from "./pages/AdminLogin";
@@ -31,6 +32,7 @@ const App = () => (
             <Route path="/fellowship" element={<Fellowship />} />
             <Route path="/speakers" element={<Speakers />} />
             <Route path="/schedule" element={<Schedule />} />
+            <Route path="/scholarship" element={<Scholarship />} />
             <Route path="/plant-a-seed" element={<PlantASeed />} />
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin" element={<Admin />} />

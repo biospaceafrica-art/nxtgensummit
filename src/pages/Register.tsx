@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -217,10 +218,10 @@ const Register = () => {
           </div>
 
           <p className="text-xs text-center text-muted-foreground">
-            Scholarship applications are separate.{" "}
-            <a href="https://theplatformnigeria.com/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-              Apply for Scholarship →
-            </a>
+            Looking for scholarship opportunities?{" "}
+            <Link to="/scholarship" className="text-primary hover:underline font-medium">
+              View Scholarship Program →
+            </Link>
           </p>
         </motion.form>
       </div>
