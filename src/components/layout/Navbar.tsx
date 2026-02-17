@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import nextgenLogo from "@/assets/nextgen-logo.png";
 
 const navLinks = [
   { label: "About", href: "/#about" },
@@ -20,11 +21,8 @@ const Navbar = () => {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass">
       <div className="container flex items-center justify-between h-16 md:h-20">
-        <Link to="/" className="flex items-center gap-3">
-          <span className="text-2xl font-display font-bold text-gradient">NEXT</span>
-          <span className="hidden sm:block text-xs text-muted-foreground leading-tight">
-            Generation<br />Summit
-          </span>
+        <Link to="/" className="flex items-center gap-2">
+          <img src={nextgenLogo} alt="Next Generation Summit logo" className="h-10 sm:h-12 w-auto" />
         </Link>
 
         {/* Desktop */}
