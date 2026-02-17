@@ -21,7 +21,7 @@ const Footer = () => (
             <Link to="/fellowship" className="text-sm text-muted-foreground hover:text-primary transition-colors">Fellowship Programs</Link>
             <Link to="/speakers" className="text-sm text-muted-foreground hover:text-primary transition-colors">Speakers</Link>
             <Link to="/schedule" className="text-sm text-muted-foreground hover:text-primary transition-colors">Schedule</Link>
-            <Link to="/plant-a-seed" className="text-sm text-muted-foreground hover:text-primary transition-colors">Plant a Seed</Link>
+            <Link to="/plant-a-seed" className="text-sm text-muted-foreground hover:text-primary transition-colors">Be a Door Opener</Link>
             <a href="https://theplatformnigeria.com/" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-primary transition-colors">Scholarship</a>
           </div>
         </div>

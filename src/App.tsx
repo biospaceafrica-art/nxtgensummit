@@ -12,6 +12,7 @@ import Speakers from "./pages/Speakers";
 import Schedule from "./pages/Schedule";
 import PlantASeed from "./pages/PlantASeed";
 import Admin from "./pages/Admin";
+import AdminLogin from "./pages/AdminLogin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +32,7 @@ const App = () => (
             <Route path="/speakers" element={<Speakers />} />
             <Route path="/schedule" element={<Schedule />} />
             <Route path="/plant-a-seed" element={<PlantASeed />} />
+            <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
