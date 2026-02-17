@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import audreyImg from "@/assets/speakers/audrey-joe-ezigbo.jpeg";
 import offiongImg from "@/assets/speakers/offiong-archibong.jpeg";
 import lucyImg from "@/assets/speakers/lucy-doggett-kamero.jpeg";
+import orokpoImg from "@/assets/speakers/apostle-michael-orokpo.webp";
 
 const speakers = [
   {
@@ -32,7 +33,7 @@ const speakers = [
     name: "Apostle Michael Orokpo",
     title: "President",
     org: "Encounter Jesus Ministries",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=500&fit=crop",
+    image: orokpoImg,
   },
 ];
 
