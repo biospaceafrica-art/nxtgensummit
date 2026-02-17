@@ -61,17 +61,49 @@ const Admin = () => {
   const [regTrackFilter, setRegTrackFilter] = useState<"all" | "career" | "enterprise">("all");
   const [regStatusFilter, setRegStatusFilter] = useState<string>("all");
 
-  // Auth guard
+  // Auth guard with admin role check
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (!session?.user) {
+        setUser(null);
+        setAuthLoading(false);
+        navigate("/admin/login");
+        return;
+      }
+      // Check admin role
+      const res = await supabase.functions.invoke("check-admin", {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      if (!res.data?.isAdmin) {
+        await supabase.auth.signOut();
+        setUser(null);
+        setAuthLoading(false);
+        navigate("/admin/login");
+        toast.error("Access denied. Admin privileges required.");
+        return;
+      }
+      setUser(session.user);
       setAuthLoading(false);
-      if (!session?.user) navigate("/admin/login");
     });
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!session?.user) {
+        setUser(null);
+        setAuthLoading(false);
+        navigate("/admin/login");
+        return;
+      }
+      const res = await supabase.functions.invoke("check-admin", {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      if (!res.data?.isAdmin) {
+        await supabase.auth.signOut();
+        setUser(null);
+        setAuthLoading(false);
+        navigate("/admin/login");
+        return;
+      }
+      setUser(session.user);
       setAuthLoading(false);
-      if (!session?.user) navigate("/admin/login");
     });
     return () => subscription.unsubscribe();
   }, [navigate]);
