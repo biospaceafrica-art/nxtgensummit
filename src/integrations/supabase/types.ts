@@ -127,6 +127,33 @@ export type Database = {
           },
         ]
       }
+      event_gallery: {
+        Row: {
+          created_at: string
+          description: string | null
+          event_year: number
+          id: string
+          image_url: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          event_year: number
+          id?: string
+          image_url: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          event_year?: number
+          id?: string
+          image_url?: string
+          title?: string
+        }
+        Relationships: []
+      }
       registrations: {
         Row: {
           created_at: string
