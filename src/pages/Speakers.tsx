@@ -1,24 +1,26 @@
 import { motion } from "framer-motion";
+import audreyImg from "@/assets/speakers/audrey-joe-ezigbo.jpeg";
+import offiongImg from "@/assets/speakers/offiong-archibong.jpeg";
+import lucyImg from "@/assets/speakers/lucy-doggett-kamero.jpeg";
 
 const speakers = [
   {
+    name: "Audrey Joe-Ezigbo",
+    title: "CEO & Co-Founder",
+    org: "Falcon Corporation",
+    image: audreyImg,
+  },
+  {
     name: "Dr. Offiong Archibong",
-    title: "Senior Strategy Advisor",
+    title: "Senior World Bank Strategy Consultant",
     org: "World Bank",
-    image: "https://nextgenerationsummit.com/wp-content/uploads/2025/12/IMG_1985-scaled-e1766428293794.jpg",
+    image: offiongImg,
   },
   {
     name: "Lucy Doggett Kamero",
     title: "Africa KBN Coordinator",
     org: "Global Advance",
-    bio: "Faith-Driven Entrepreneur",
-    image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=500&fit=crop",
-  },
-  {
-    name: "Audrey Joe-Ezigbo",
-    title: "CEO & Co-Founder",
-    org: "Falcon Corporation",
-    image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&h=500&fit=crop",
+    image: lucyImg,
   },
   {
     name: "Manuela Hargassner-Delpos",
@@ -31,12 +33,6 @@ const speakers = [
     title: "President",
     org: "Encounter Jesus Ministries",
     image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=500&fit=crop",
-  },
-  {
-    name: "Susanne Schroeder",
-    title: "Head of Dev Corp.",
-    org: "German Embassy Nig. ECOWAS",
-    image: "https://images.unsplash.com/photo-1594744803329-e58b31de8bf5?w=400&h=500&fit=crop",
   },
 ];
 
