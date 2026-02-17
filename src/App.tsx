@@ -14,6 +14,7 @@ import Scholarship from "./pages/Scholarship";
 import PlantASeed from "./pages/PlantASeed";
 import Admin from "./pages/Admin";
 import AdminLogin from "./pages/AdminLogin";
+import Gallery from "./pages/Gallery";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ const App = () => (
             <Route path="/schedule" element={<Schedule />} />
             <Route path="/scholarship" element={<Scholarship />} />
             <Route path="/plant-a-seed" element={<PlantASeed />} />
+            <Route path="/gallery" element={<Gallery />} />
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="*" element={<NotFound />} />
