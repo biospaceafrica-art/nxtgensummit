@@ -2,9 +2,9 @@ import { motion } from "framer-motion";
 import { Users, Handshake, Mic, Award } from "lucide-react";
 
 const stats = [
-  { icon: Users, value: "500+", label: "Participants Reached" },
+  { icon: Users, value: "2000+", label: "Participants Reached" },
   { icon: Handshake, value: "50+", label: "Scholarships Awarded" },
-  { icon: Mic, value: "30+", label: "Industry Speakers" },
+  { icon: Mic, value: "5+", label: "Industry Speakers" },
   { icon: Award, value: "100+", label: "Jobs Connected" },
 ];
 
