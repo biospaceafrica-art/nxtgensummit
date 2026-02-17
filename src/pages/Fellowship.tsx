@@ -23,13 +23,13 @@ const careerCourses = [
 ];
 
 const Fellowship = () => (
-  <div className="min-h-screen pt-24 pb-16">
-    <div className="container">
+  <div className="min-h-screen pt-20 sm:pt-24 pb-12 sm:pb-16">
+    <div className="container px-4">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center mb-20"
+        className="text-center mb-12 sm:mb-20"
       >
         <p className="text-primary text-sm font-semibold uppercase tracking-widest mb-2">Skill Accelerator</p>
         <h1 className="text-4xl md:text-6xl font-display font-bold mb-4">
@@ -155,7 +155,7 @@ const Fellowship = () => (
           </p>
 
           <h3 className="font-display font-semibold mb-4">Core Modules</h3>
-          <div className="space-y-3">
+          <div className="space-y-3 mb-8">
             {[
               "Business Model Canvas & Lean Startup",
               "Financial Literacy & Fundraising",
@@ -174,6 +174,80 @@ const Fellowship = () => (
           </div>
         </motion.div>
       </div>
+
+      {/* Opportunity Accelerator */}
+      <motion.section
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        className="mb-20"
+      >
+        <div className="glass rounded-2xl p-6 sm:p-8 md:p-12">
+          <div className="flex items-center gap-3 mb-6">
+            <Lightbulb className="w-8 h-8 text-primary" />
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-display font-bold">
+              Opportunity <span className="text-gradient">Accelerator</span>
+            </h2>
+          </div>
+          <p className="text-sm sm:text-base text-muted-foreground mb-8 max-w-3xl">
+            To address these challenges, the Business School Opportunity Accelerator seeks to bridge the gap between learning and real-world impact by connecting trained entrepreneurs to post-training growth opportunities. This will include:
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            <div className="bg-secondary/50 rounded-xl p-5 sm:p-6 space-y-3">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <BookOpen className="w-5 h-5 text-primary" />
+              </div>
+              <h3 className="font-display font-semibold text-base sm:text-lg">Market Linkage Platforms</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground">
+                Facilitating access to corporate and institutional buyers, trade fairs, digital marketplaces, and strategic partnerships.
+              </p>
+            </div>
+            <div className="bg-secondary/50 rounded-xl p-5 sm:p-6 space-y-3">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Target className="w-5 h-5 text-primary" />
+              </div>
+              <h3 className="font-display font-semibold text-base sm:text-lg">Access to Finance</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground">
+                Creating pathways to funding through micro-grants, revolving funds, and partnerships with financial institutions and impact investors.
+              </p>
+            </div>
+            <div className="bg-secondary/50 rounded-xl p-5 sm:p-6 space-y-3">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Users className="w-5 h-5 text-primary" />
+              </div>
+              <h3 className="font-display font-semibold text-base sm:text-lg">Business Mentorship & Advisory</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground">
+                Providing tailored guidance, mentorship, and business development support to ensure long-term growth and sustainability.
+              </p>
+            </div>
+          </div>
+
+          {/* NextFund Impact */}
+          <div className="glass rounded-xl p-5 sm:p-8">
+            <h3 className="text-lg sm:text-xl font-display font-bold mb-4">
+              Impact & <span className="text-gradient">Sustainability</span>
+            </h3>
+            <p className="text-sm text-muted-foreground mb-6 max-w-2xl">
+              The NextFund's design ensures that investment returns continuously fuel new opportunities for youth-led businesses, creating a self-sustaining impact cycle. Over time, the model aims to:
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 text-center">
+                <Shield className="w-6 h-6 text-primary mx-auto mb-2" />
+                <p className="text-xs sm:text-sm font-medium">Strengthen the capacity and visibility of youth-led enterprises.</p>
+              </div>
+              <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 text-center">
+                <Target className="w-6 h-6 text-primary mx-auto mb-2" />
+                <p className="text-xs sm:text-sm font-medium">Increase job creation and innovation-driven growth.</p>
+              </div>
+              <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 text-center">
+                <Users className="w-6 h-6 text-primary mx-auto mb-2" />
+                <p className="text-xs sm:text-sm font-medium">Attract more partners into a collaborative ecosystem of youth enterprise development.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </motion.section>
 
       {/* CTA */}
       <div className="text-center">
