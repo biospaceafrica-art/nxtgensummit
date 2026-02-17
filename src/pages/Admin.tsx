@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Users, TrendingUp, CheckCircle, ListTodo, Plus, Trash2, DollarSign } from "lucide-react";
+import {
+  Users, TrendingUp, CheckCircle, ListTodo, Plus, Trash2,
+  DollarSign, LogOut, BarChart3, Search,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -8,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import type { User } from "@supabase/supabase-js";
 
 type Registration = {
   id: string;
@@ -43,16 +48,37 @@ type DoorOpenerSubmission = {
 };
 
 const Admin = () => {
+  const navigate = useNavigate();
+  const [user, setUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [tasks, setTasks] = useState<AdminTask[]>([]);
   const [doorOpeners, setDoorOpeners] = useState<DoorOpenerSubmission[]>([]);
   const [loading, setLoading] = useState(true);
   const [newTask, setNewTask] = useState({ title: "", assigned_to: "", due_date: "" });
-  const [activeTab, setActiveTab] = useState<"overview" | "registrations" | "tasks" | "whatsapp" | "door-openers">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "registrations" | "tasks" | "whatsapp" | "door-openers" | "analytics">("overview");
+  const [regSearch, setRegSearch] = useState("");
+  const [regTrackFilter, setRegTrackFilter] = useState<"all" | "career" | "enterprise">("all");
+  const [regStatusFilter, setRegStatusFilter] = useState<string>("all");
+
+  // Auth guard
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      setAuthLoading(false);
+      if (!session?.user) navigate("/admin/login");
+    });
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      setAuthLoading(false);
+      if (!session?.user) navigate("/admin/login");
+    });
+    return () => subscription.unsubscribe();
+  }, [navigate]);
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (user) fetchData();
+  }, [user]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -67,13 +93,48 @@ const Admin = () => {
     setLoading(false);
   };
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/admin/login");
+  };
+
+  const filteredRegistrations = registrations.filter((r) => {
+    const matchesSearch = regSearch === "" ||
+      r.full_name.toLowerCase().includes(regSearch.toLowerCase()) ||
+      r.email.toLowerCase().includes(regSearch.toLowerCase()) ||
+      (r.selected_course || "").toLowerCase().includes(regSearch.toLowerCase());
+    const matchesTrack = regTrackFilter === "all" || r.fellowship_track === regTrackFilter;
+    const matchesStatus = regStatusFilter === "all" || r.current_status === regStatusFilter;
+    return matchesSearch && matchesTrack && matchesStatus;
+  });
+
   const stats = {
     total: registrations.length,
     career: registrations.filter((r) => r.fellowship_track === "career").length,
     enterprise: registrations.filter((r) => r.fellowship_track === "enterprise").length,
     students: registrations.filter((r) => r.current_status === "student").length,
+    employed: registrations.filter((r) => r.current_status === "employed").length,
+    unemployed: registrations.filter((r) => r.current_status === "unemployed").length,
+    corpMembers: registrations.filter((r) => r.current_status === "corp_member").length,
     confirmedPayments: doorOpeners.filter((d) => d.payment_confirmed).length,
+    totalDoorOpeners: doorOpeners.length,
   };
+
+  // Course distribution
+  const courseDistribution = registrations.reduce<Record<string, number>>((acc, r) => {
+    const course = r.selected_course || "Unspecified";
+    acc[course] = (acc[course] || 0) + 1;
+    return acc;
+  }, {});
+
+  // Daily registrations (last 7 days)
+  const dailyRegs = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (6 - i));
+    const key = d.toISOString().split("T")[0];
+    const count = registrations.filter((r) => r.created_at.startsWith(key)).length;
+    return { date: d.toLocaleDateString("en", { weekday: "short", month: "short", day: "numeric" }), count };
+  });
 
   const addTask = async () => {
     if (!newTask.title) return;
@@ -118,18 +179,25 @@ const Admin = () => {
   const tabClass = (tab: string) =>
     `px-4 py-2 text-sm font-medium rounded-lg transition-colors ${activeTab === tab ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground hover:bg-secondary"}`;
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading...</div>;
+  if (authLoading) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Checking access...</div>;
+  if (!user) return null;
+  if (loading) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading dashboard...</div>;
 
   return (
     <div className="min-h-screen pt-20 sm:pt-24 pb-12 sm:pb-16">
       <div className="container px-4">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <h1 className="text-2xl sm:text-4xl font-display font-bold mb-6">
-            Admin <span className="text-gradient">Dashboard</span>
-          </h1>
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-2xl sm:text-4xl font-display font-bold">
+              Admin <span className="text-gradient">Dashboard</span>
+            </h1>
+            <Button variant="outline" size="sm" onClick={handleLogout}>
+              <LogOut className="w-4 h-4 mr-1" /> Logout
+            </Button>
+          </div>
 
           <div className="flex flex-wrap gap-2 mb-8">
-            {(["overview", "registrations", "door-openers", "tasks", "whatsapp"] as const).map((tab) => (
+            {(["overview", "analytics", "registrations", "door-openers", "tasks", "whatsapp"] as const).map((tab) => (
               <button key={tab} className={tabClass(tab)} onClick={() => setActiveTab(tab)}>
                 {tab === "door-openers" ? "Door Openers" : tab.charAt(0).toUpperCase() + tab.slice(1)}
               </button>
@@ -157,10 +225,131 @@ const Admin = () => {
             </div>
           )}
 
-          {/* Registrations */}
+          {/* Analytics */}
+          {activeTab === "analytics" && (
+            <div className="space-y-6">
+              {/* Daily trend */}
+              <Card className="glass border-border">
+                <CardHeader><CardTitle className="text-lg flex items-center gap-2"><BarChart3 className="w-5 h-5 text-primary" /> Registration Trend (Last 7 Days)</CardTitle></CardHeader>
+                <CardContent>
+                  <div className="flex items-end gap-2 h-40">
+                    {dailyRegs.map((d) => {
+                      const max = Math.max(...dailyRegs.map((r) => r.count), 1);
+                      return (
+                        <div key={d.date} className="flex-1 flex flex-col items-center gap-1">
+                          <span className="text-xs font-medium">{d.count}</span>
+                          <div
+                            className="w-full bg-primary/80 rounded-t-md transition-all"
+                            style={{ height: `${(d.count / max) * 100}%`, minHeight: d.count > 0 ? "8px" : "2px" }}
+                          />
+                          <span className="text-[10px] text-muted-foreground text-center">{d.date}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Demographics */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card className="glass border-border">
+                  <CardHeader><CardTitle className="text-lg">Status Breakdown</CardTitle></CardHeader>
+                  <CardContent className="space-y-3">
+                    {[
+                      { label: "Employed", count: stats.employed },
+                      { label: "Unemployed", count: stats.unemployed },
+                      { label: "Corp Members", count: stats.corpMembers },
+                      { label: "Students", count: stats.students },
+                    ].map((s) => (
+                      <div key={s.label} className="flex items-center justify-between">
+                        <span className="text-sm">{s.label}</span>
+                        <div className="flex items-center gap-2">
+                          <div className="w-24 h-2 bg-secondary rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-primary rounded-full"
+                              style={{ width: `${stats.total ? (s.count / stats.total) * 100 : 0}%` }}
+                            />
+                          </div>
+                          <span className="text-sm font-medium w-8 text-right">{s.count}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+
+                <Card className="glass border-border">
+                  <CardHeader><CardTitle className="text-lg">Course Distribution</CardTitle></CardHeader>
+                  <CardContent className="space-y-2 max-h-60 overflow-y-auto">
+                    {Object.entries(courseDistribution)
+                      .sort(([, a], [, b]) => b - a)
+                      .map(([course, count]) => (
+                        <div key={course} className="flex items-center justify-between">
+                          <span className="text-sm truncate mr-2">{course}</span>
+                          <Badge variant="secondary" className="text-xs shrink-0">{count}</Badge>
+                        </div>
+                      ))}
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Door Opener stats */}
+              <Card className="glass border-border">
+                <CardHeader><CardTitle className="text-lg">Door Opener Summary</CardTitle></CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                    <div className="text-center">
+                      <div className="text-2xl font-display font-bold text-primary">{stats.totalDoorOpeners}</div>
+                      <div className="text-xs text-muted-foreground">Total Submissions</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-display font-bold text-emerald-400">{stats.confirmedPayments}</div>
+                      <div className="text-xs text-muted-foreground">Confirmed Payments</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-display font-bold text-yellow-400">{stats.totalDoorOpeners - stats.confirmedPayments}</div>
+                      <div className="text-xs text-muted-foreground">Pending</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Registrations with search & filter */}
           {activeTab === "registrations" && (
             <Card className="glass border-border">
-              <CardHeader><CardTitle className="text-lg">All Registrations ({registrations.length})</CardTitle></CardHeader>
+              <CardHeader>
+                <CardTitle className="text-lg">All Registrations ({filteredRegistrations.length})</CardTitle>
+                <div className="flex flex-col sm:flex-row gap-3 mt-3">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search name, email, or course..."
+                      value={regSearch}
+                      onChange={(e) => setRegSearch(e.target.value)}
+                      className="pl-9"
+                    />
+                  </div>
+                  <Select value={regTrackFilter} onValueChange={(v) => setRegTrackFilter(v as any)}>
+                    <SelectTrigger className="w-full sm:w-[160px]"><SelectValue placeholder="Track" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Tracks</SelectItem>
+                      <SelectItem value="career">Career</SelectItem>
+                      <SelectItem value="enterprise">Business</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select value={regStatusFilter} onValueChange={setRegStatusFilter}>
+                    <SelectTrigger className="w-full sm:w-[160px]"><SelectValue placeholder="Status" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Status</SelectItem>
+                      <SelectItem value="employed">Employed</SelectItem>
+                      <SelectItem value="unemployed">Unemployed</SelectItem>
+                      <SelectItem value="corp_member">Corp Member</SelectItem>
+                      <SelectItem value="student">Student</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
@@ -175,7 +364,7 @@ const Admin = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {registrations.map((r) => (
+                      {filteredRegistrations.map((r) => (
                         <tr key={r.id} className="border-b border-border/50">
                           <td className="py-3 px-2 font-medium">{r.full_name}</td>
                           <td className="py-3 px-2 hidden sm:table-cell text-muted-foreground">{r.email}</td>
@@ -193,8 +382,8 @@ const Admin = () => {
                           </td>
                         </tr>
                       ))}
-                      {registrations.length === 0 && (
-                        <tr><td colSpan={6} className="text-center py-8 text-muted-foreground">No registrations yet</td></tr>
+                      {filteredRegistrations.length === 0 && (
+                        <tr><td colSpan={6} className="text-center py-8 text-muted-foreground">No registrations found</td></tr>
                       )}
                     </tbody>
                   </table>

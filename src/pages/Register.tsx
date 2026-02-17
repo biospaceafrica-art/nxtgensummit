@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Briefcase, GraduationCap } from "lucide-react";
+import { Briefcase, GraduationCap, Search } from "lucide-react";
 
 const businessCourses = [
   "Entrepreneurship & Innovation",
@@ -25,6 +25,7 @@ const careerCourses = [
 
 const Register = () => {
   const [loading, setLoading] = useState(false);
+  const [courseSearch, setCourseSearch] = useState("");
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -34,7 +35,10 @@ const Register = () => {
     selectedCourse: "",
   });
 
-  const courses = formData.track === "enterprise" ? businessCourses : formData.track === "career" ? careerCourses : [];
+  const allCourses = formData.track === "enterprise" ? businessCourses : formData.track === "career" ? careerCourses : [];
+  const filteredCourses = allCourses.filter((c) =>
+    c.toLowerCase().includes(courseSearch.toLowerCase())
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,6 +65,7 @@ const Register = () => {
       } else {
         toast.success("Registration submitted! Check your email for confirmation.");
         setFormData({ fullName: "", email: "", phone: "", status: "", track: "", selectedCourse: "" });
+        setCourseSearch("");
       }
     } catch (err: any) {
       toast.error(err.message || "Registration failed. Please try again.");
@@ -166,18 +171,27 @@ const Register = () => {
             </RadioGroup>
           </div>
 
-          {/* Course Selection */}
+          {/* Course Selection with Search */}
           {formData.track && (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-              <h2 className="font-display font-bold text-lg mb-4">
+              <h2 className="font-display font-bold text-lg mb-3">
                 Select Course — {formData.track === "enterprise" ? "Business Champions" : "Career Champions"}
               </h2>
+              <div className="relative mb-3">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search courses..."
+                  value={courseSearch}
+                  onChange={(e) => setCourseSearch(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
               <RadioGroup
                 value={formData.selectedCourse}
                 onValueChange={(v) => setFormData({ ...formData, selectedCourse: v })}
                 className="grid grid-cols-1 sm:grid-cols-2 gap-3"
               >
-                {courses.map((course) => (
+                {filteredCourses.map((course) => (
                   <label
                     key={course}
                     htmlFor={`course-${course}`}
@@ -189,6 +203,9 @@ const Register = () => {
                     {course}
                   </label>
                 ))}
+                {filteredCourses.length === 0 && (
+                  <p className="text-sm text-muted-foreground col-span-2 py-2">No courses match your search.</p>
+                )}
               </RadioGroup>
             </motion.div>
           )}
