@@ -147,6 +147,29 @@ const Scholarship = () => {
           </div>
         </motion.section>
 
+        {/* Apprenticeship Challenge */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mb-20 max-w-3xl mx-auto"
+        >
+          <div className="glass rounded-2xl p-6 sm:p-8 border-primary/20 text-center">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-4">
+              🎯 Mandatory Task
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-display font-bold mb-3">
+              Apprenticeship <span className="text-gradient">Challenge</span>
+            </h2>
+            <p className="text-sm text-muted-foreground leading-relaxed max-w-xl mx-auto mb-4">
+              All scholarship applicants are advised to check our social media platforms for the secret code to our Apprenticeship projects. Lucky winners will be announced during the summit.
+            </p>
+            <p className="text-sm font-semibold text-primary">
+              This task must be completed by all scholarship students.
+            </p>
+          </div>
+        </motion.section>
+
         {/* CTA */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
