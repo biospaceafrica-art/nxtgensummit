@@ -1,11 +1,12 @@
 import { Link } from "react-router-dom";
+import nextgenLogo from "@/assets/nextgen-logo.png";
 
 const Footer = () => (
   <footer className="bg-secondary border-t border-border">
     <div className="container py-16">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
         <div className="md:col-span-2">
-          <span className="text-3xl font-display font-bold text-gradient">NEXT</span>
+          <img src={nextgenLogo} alt="Next Generation Summit logo" className="h-12 w-auto mb-3" />
           <p className="text-sm text-muted-foreground mt-3 max-w-md">
             Next Generation Summit 2026 — Raising the Next Generation of Faith-Driven Business and Career Leaders.
             A Strategy for Global Missions and Evangelism.
