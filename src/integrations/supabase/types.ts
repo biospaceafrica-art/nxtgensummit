@@ -47,6 +47,48 @@ export type Database = {
         }
         Relationships: []
       }
+      door_opener_submissions: {
+        Row: {
+          amount_paid: number | null
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          message: string | null
+          partnership_tier: string
+          payment_confirmed: boolean
+          payment_confirmed_at: string | null
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount_paid?: number | null
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          message?: string | null
+          partnership_tier: string
+          payment_confirmed?: boolean
+          payment_confirmed_at?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount_paid?: number | null
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          message?: string | null
+          partnership_tier?: string
+          payment_confirmed?: boolean
+          payment_confirmed_at?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       email_reminders: {
         Row: {
           created_at: string
@@ -93,7 +135,10 @@ export type Database = {
           fellowship_track: Database["public"]["Enums"]["fellowship_track"]
           full_name: string
           id: string
+          payment_confirmed: boolean
+          payment_confirmed_at: string | null
           phone: string | null
+          selected_course: string | null
           updated_at: string
           whatsapp_group_assigned: string | null
         }
@@ -104,7 +149,10 @@ export type Database = {
           fellowship_track: Database["public"]["Enums"]["fellowship_track"]
           full_name: string
           id?: string
+          payment_confirmed?: boolean
+          payment_confirmed_at?: string | null
           phone?: string | null
+          selected_course?: string | null
           updated_at?: string
           whatsapp_group_assigned?: string | null
         }
@@ -115,7 +163,10 @@ export type Database = {
           fellowship_track?: Database["public"]["Enums"]["fellowship_track"]
           full_name?: string
           id?: string
+          payment_confirmed?: boolean
+          payment_confirmed_at?: string | null
           phone?: string | null
+          selected_course?: string | null
           updated_at?: string
           whatsapp_group_assigned?: string | null
         }
