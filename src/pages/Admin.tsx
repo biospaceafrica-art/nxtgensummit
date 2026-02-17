@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Users, TrendingUp, CheckCircle, ListTodo, Plus, Trash2 } from "lucide-react";
+import { Users, TrendingUp, CheckCircle, ListTodo, Plus, Trash2, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +16,8 @@ type Registration = {
   phone: string | null;
   fellowship_track: "career" | "enterprise";
   current_status: "employed" | "unemployed" | "corp_member" | "student";
+  selected_course: string | null;
+  payment_confirmed: boolean;
   whatsapp_group_assigned: string | null;
   created_at: string;
 };
@@ -31,12 +32,23 @@ type AdminTask = {
   created_at: string;
 };
 
+type DoorOpenerSubmission = {
+  id: string;
+  full_name: string;
+  email: string;
+  partnership_tier: string;
+  payment_confirmed: boolean;
+  payment_confirmed_at: string | null;
+  created_at: string;
+};
+
 const Admin = () => {
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [tasks, setTasks] = useState<AdminTask[]>([]);
+  const [doorOpeners, setDoorOpeners] = useState<DoorOpenerSubmission[]>([]);
   const [loading, setLoading] = useState(true);
   const [newTask, setNewTask] = useState({ title: "", assigned_to: "", due_date: "" });
-  const [activeTab, setActiveTab] = useState<"overview" | "registrations" | "tasks" | "whatsapp">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "registrations" | "tasks" | "whatsapp" | "door-openers">("overview");
 
   useEffect(() => {
     fetchData();
@@ -44,12 +56,14 @@ const Admin = () => {
 
   const fetchData = async () => {
     setLoading(true);
-    const [regRes, taskRes] = await Promise.all([
+    const [regRes, taskRes, doRes] = await Promise.all([
       supabase.from("registrations").select("*").order("created_at", { ascending: false }),
       supabase.from("admin_tasks").select("*").order("created_at", { ascending: false }),
+      supabase.from("door_opener_submissions").select("*").order("created_at", { ascending: false }),
     ]);
     if (regRes.data) setRegistrations(regRes.data as Registration[]);
     if (taskRes.data) setTasks(taskRes.data as AdminTask[]);
+    if (doRes.data) setDoorOpeners(doRes.data as DoorOpenerSubmission[]);
     setLoading(false);
   };
 
@@ -58,6 +72,7 @@ const Admin = () => {
     career: registrations.filter((r) => r.fellowship_track === "career").length,
     enterprise: registrations.filter((r) => r.fellowship_track === "enterprise").length,
     students: registrations.filter((r) => r.current_status === "student").length,
+    confirmedPayments: doorOpeners.filter((d) => d.payment_confirmed).length,
   };
 
   const addTask = async () => {
@@ -97,7 +112,7 @@ const Admin = () => {
         { onConflict: "fellowship_track" }
       );
     }
-    toast.success("WhatsApp groups created/updated by fellowship track!");
+    toast.success("WhatsApp groups created/updated!");
   };
 
   const tabClass = (tab: string) =>
@@ -113,23 +128,23 @@ const Admin = () => {
             Admin <span className="text-gradient">Dashboard</span>
           </h1>
 
-          {/* Tabs */}
           <div className="flex flex-wrap gap-2 mb-8">
-            {(["overview", "registrations", "tasks", "whatsapp"] as const).map((tab) => (
+            {(["overview", "registrations", "door-openers", "tasks", "whatsapp"] as const).map((tab) => (
               <button key={tab} className={tabClass(tab)} onClick={() => setActiveTab(tab)}>
-                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                {tab === "door-openers" ? "Door Openers" : tab.charAt(0).toUpperCase() + tab.slice(1)}
               </button>
             ))}
           </div>
 
           {/* Overview */}
           {activeTab === "overview" && (
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
               {[
                 { icon: Users, label: "Total Registrations", value: stats.total, color: "text-primary" },
-                { icon: TrendingUp, label: "Career Track", value: stats.career, color: "text-green-400" },
-                { icon: CheckCircle, label: "Enterprise Track", value: stats.enterprise, color: "text-blue-400" },
+                { icon: TrendingUp, label: "Career Champions", value: stats.career, color: "text-green-400" },
+                { icon: CheckCircle, label: "Business Champions", value: stats.enterprise, color: "text-blue-400" },
                 { icon: ListTodo, label: "Students", value: stats.students, color: "text-yellow-400" },
+                { icon: DollarSign, label: "Confirmed Payments", value: stats.confirmedPayments, color: "text-emerald-400" },
               ].map((s) => (
                 <Card key={s.label} className="glass border-border">
                   <CardContent className="p-4 sm:p-6 text-center">
@@ -154,6 +169,7 @@ const Admin = () => {
                         <th className="text-left py-3 px-2">Name</th>
                         <th className="text-left py-3 px-2 hidden sm:table-cell">Email</th>
                         <th className="text-left py-3 px-2">Track</th>
+                        <th className="text-left py-3 px-2 hidden md:table-cell">Course</th>
                         <th className="text-left py-3 px-2 hidden md:table-cell">Status</th>
                         <th className="text-left py-3 px-2 hidden lg:table-cell">Date</th>
                       </tr>
@@ -164,8 +180,11 @@ const Admin = () => {
                           <td className="py-3 px-2 font-medium">{r.full_name}</td>
                           <td className="py-3 px-2 hidden sm:table-cell text-muted-foreground">{r.email}</td>
                           <td className="py-3 px-2">
-                            <Badge variant="outline" className="border-primary/40 text-primary text-xs">{r.fellowship_track}</Badge>
+                            <Badge variant="outline" className="border-primary/40 text-primary text-xs">
+                              {r.fellowship_track === "enterprise" ? "Business" : "Career"}
+                            </Badge>
                           </td>
+                          <td className="py-3 px-2 hidden md:table-cell text-xs text-muted-foreground">{r.selected_course || "—"}</td>
                           <td className="py-3 px-2 hidden md:table-cell">
                             <Badge variant="secondary" className="text-xs">{r.current_status}</Badge>
                           </td>
@@ -175,7 +194,51 @@ const Admin = () => {
                         </tr>
                       ))}
                       {registrations.length === 0 && (
-                        <tr><td colSpan={5} className="text-center py-8 text-muted-foreground">No registrations yet</td></tr>
+                        <tr><td colSpan={6} className="text-center py-8 text-muted-foreground">No registrations yet</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Door Openers */}
+          {activeTab === "door-openers" && (
+            <Card className="glass border-border">
+              <CardHeader><CardTitle className="text-lg">Door Opener Submissions ({doorOpeners.length})</CardTitle></CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-border text-muted-foreground">
+                        <th className="text-left py-3 px-2">Name</th>
+                        <th className="text-left py-3 px-2 hidden sm:table-cell">Email</th>
+                        <th className="text-left py-3 px-2">Tier</th>
+                        <th className="text-left py-3 px-2">Payment</th>
+                        <th className="text-left py-3 px-2 hidden lg:table-cell">Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {doorOpeners.map((d) => (
+                        <tr key={d.id} className="border-b border-border/50">
+                          <td className="py-3 px-2 font-medium">{d.full_name}</td>
+                          <td className="py-3 px-2 hidden sm:table-cell text-muted-foreground">{d.email}</td>
+                          <td className="py-3 px-2">
+                            <Badge variant="outline" className="text-xs capitalize">{d.partnership_tier}</Badge>
+                          </td>
+                          <td className="py-3 px-2">
+                            <Badge variant={d.payment_confirmed ? "default" : "secondary"} className="text-xs">
+                              {d.payment_confirmed ? "✓ Confirmed" : "Pending"}
+                            </Badge>
+                          </td>
+                          <td className="py-3 px-2 hidden lg:table-cell text-muted-foreground text-xs">
+                            {new Date(d.created_at).toLocaleDateString()}
+                          </td>
+                        </tr>
+                      ))}
+                      {doorOpeners.length === 0 && (
+                        <tr><td colSpan={5} className="text-center py-8 text-muted-foreground">No submissions yet</td></tr>
                       )}
                     </tbody>
                   </table>
@@ -198,7 +261,6 @@ const Admin = () => {
                   </div>
                 </CardContent>
               </Card>
-
               <div className="space-y-3">
                 {tasks.map((t) => (
                   <Card key={t.id} className="glass border-border">
@@ -231,29 +293,23 @@ const Admin = () => {
             </div>
           )}
 
-          {/* WhatsApp Groups */}
+          {/* WhatsApp */}
           {activeTab === "whatsapp" && (
             <Card className="glass border-border">
-              <CardHeader>
-                <CardTitle className="text-lg">WhatsApp Group Management</CardTitle>
-              </CardHeader>
+              <CardHeader><CardTitle className="text-lg">WhatsApp Group Management</CardTitle></CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-sm text-muted-foreground">
-                  Auto-create WhatsApp groups by fellowship track. Groups are updated with current member counts.
-                </p>
-                <Button onClick={createWhatsAppGroups} className="bg-primary text-primary-foreground">
-                  Create / Update WhatsApp Groups
-                </Button>
+                <p className="text-sm text-muted-foreground">Auto-create WhatsApp groups by fellowship track.</p>
+                <Button onClick={createWhatsAppGroups} className="bg-primary text-primary-foreground">Create / Update WhatsApp Groups</Button>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                   <Card className="bg-secondary/50 border-border">
                     <CardContent className="p-4">
-                      <h3 className="font-semibold">Career Track Group</h3>
+                      <h3 className="font-semibold">Career Champions Group</h3>
                       <p className="text-2xl font-display font-bold text-primary mt-1">{stats.career} members</p>
                     </CardContent>
                   </Card>
                   <Card className="bg-secondary/50 border-border">
                     <CardContent className="p-4">
-                      <h3 className="font-semibold">Enterprise Track Group</h3>
+                      <h3 className="font-semibold">Business Champions Group</h3>
                       <p className="text-2xl font-display font-bold text-primary mt-1">{stats.enterprise} members</p>
                     </CardContent>
                   </Card>
