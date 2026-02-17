@@ -25,11 +25,11 @@ const FellowshipPreview = () => (
         viewport={{ once: true }}
         className="text-center mb-16"
       >
-        <p className="text-primary text-xs sm:text-sm font-semibold uppercase tracking-widest mb-2">Learnova by Tribe Africa Institute</p>
-        <h2 className="text-2xl sm:text-3xl md:text-5xl font-display font-bold mb-4">
+        <p className="text-primary text-sm font-semibold uppercase tracking-widest mb-2">Skill Accelerator</p>
+        <h2 className="text-3xl md:text-5xl font-display font-bold mb-4">
           Two Learning <span className="text-gradient">Tracks</span>
         </h2>
-        <p className="text-sm sm:text-base text-muted-foreground max-w-xl mx-auto">
+        <p className="text-muted-foreground max-w-xl mx-auto">
           Choose your path to excellence. Both tracks combine soft skills with technical mastery.
         </p>
       </motion.div>
