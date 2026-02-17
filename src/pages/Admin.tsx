@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Users, TrendingUp, CheckCircle, ListTodo, Plus, Trash2,
-  DollarSign, LogOut, BarChart3, Search,
+  DollarSign, LogOut, Search,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import type { User } from "@supabase/supabase-js";
+import AnalyticsDashboard from "@/components/admin/AnalyticsDashboard";
 
 type Registration = {
   id: string;
@@ -144,29 +145,9 @@ const Admin = () => {
     total: registrations.length,
     career: registrations.filter((r) => r.fellowship_track === "career").length,
     enterprise: registrations.filter((r) => r.fellowship_track === "enterprise").length,
-    students: registrations.filter((r) => r.current_status === "student").length,
-    employed: registrations.filter((r) => r.current_status === "employed").length,
-    unemployed: registrations.filter((r) => r.current_status === "unemployed").length,
-    corpMembers: registrations.filter((r) => r.current_status === "corp_member").length,
     confirmedPayments: doorOpeners.filter((d) => d.payment_confirmed).length,
     totalDoorOpeners: doorOpeners.length,
   };
-
-  // Course distribution
-  const courseDistribution = registrations.reduce<Record<string, number>>((acc, r) => {
-    const course = r.selected_course || "Unspecified";
-    acc[course] = (acc[course] || 0) + 1;
-    return acc;
-  }, {});
-
-  // Daily registrations (last 7 days)
-  const dailyRegs = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() - (6 - i));
-    const key = d.toISOString().split("T")[0];
-    const count = registrations.filter((r) => r.created_at.startsWith(key)).length;
-    return { date: d.toLocaleDateString("en", { weekday: "short", month: "short", day: "numeric" }), count };
-  });
 
   const addTask = async () => {
     if (!newTask.title) return;
@@ -238,13 +219,12 @@ const Admin = () => {
 
           {/* Overview */}
           {activeTab === "overview" && (
-            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
               {[
                 { icon: Users, label: "Total Registrations", value: stats.total, color: "text-primary" },
-                { icon: TrendingUp, label: "Career Champions", value: stats.career, color: "text-green-400" },
-                { icon: CheckCircle, label: "Business Champions", value: stats.enterprise, color: "text-blue-400" },
-                { icon: ListTodo, label: "Students", value: stats.students, color: "text-yellow-400" },
-                { icon: DollarSign, label: "Confirmed Payments", value: stats.confirmedPayments, color: "text-emerald-400" },
+                { icon: TrendingUp, label: "Career Champions", value: stats.career, color: "text-primary" },
+                { icon: CheckCircle, label: "Business Champions", value: stats.enterprise, color: "text-primary" },
+                { icon: DollarSign, label: "Confirmed Payments", value: stats.confirmedPayments, color: "text-primary" },
               ].map((s) => (
                 <Card key={s.label} className="glass border-border">
                   <CardContent className="p-4 sm:p-6 text-center">
@@ -259,92 +239,7 @@ const Admin = () => {
 
           {/* Analytics */}
           {activeTab === "analytics" && (
-            <div className="space-y-6">
-              {/* Daily trend */}
-              <Card className="glass border-border">
-                <CardHeader><CardTitle className="text-lg flex items-center gap-2"><BarChart3 className="w-5 h-5 text-primary" /> Registration Trend (Last 7 Days)</CardTitle></CardHeader>
-                <CardContent>
-                  <div className="flex items-end gap-2 h-40">
-                    {dailyRegs.map((d) => {
-                      const max = Math.max(...dailyRegs.map((r) => r.count), 1);
-                      return (
-                        <div key={d.date} className="flex-1 flex flex-col items-center gap-1">
-                          <span className="text-xs font-medium">{d.count}</span>
-                          <div
-                            className="w-full bg-primary/80 rounded-t-md transition-all"
-                            style={{ height: `${(d.count / max) * 100}%`, minHeight: d.count > 0 ? "8px" : "2px" }}
-                          />
-                          <span className="text-[10px] text-muted-foreground text-center">{d.date}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Demographics */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card className="glass border-border">
-                  <CardHeader><CardTitle className="text-lg">Status Breakdown</CardTitle></CardHeader>
-                  <CardContent className="space-y-3">
-                    {[
-                      { label: "Employed", count: stats.employed },
-                      { label: "Unemployed", count: stats.unemployed },
-                      { label: "Corp Members", count: stats.corpMembers },
-                      { label: "Students", count: stats.students },
-                    ].map((s) => (
-                      <div key={s.label} className="flex items-center justify-between">
-                        <span className="text-sm">{s.label}</span>
-                        <div className="flex items-center gap-2">
-                          <div className="w-24 h-2 bg-secondary rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-primary rounded-full"
-                              style={{ width: `${stats.total ? (s.count / stats.total) * 100 : 0}%` }}
-                            />
-                          </div>
-                          <span className="text-sm font-medium w-8 text-right">{s.count}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </CardContent>
-                </Card>
-
-                <Card className="glass border-border">
-                  <CardHeader><CardTitle className="text-lg">Course Distribution</CardTitle></CardHeader>
-                  <CardContent className="space-y-2 max-h-60 overflow-y-auto">
-                    {Object.entries(courseDistribution)
-                      .sort(([, a], [, b]) => b - a)
-                      .map(([course, count]) => (
-                        <div key={course} className="flex items-center justify-between">
-                          <span className="text-sm truncate mr-2">{course}</span>
-                          <Badge variant="secondary" className="text-xs shrink-0">{count}</Badge>
-                        </div>
-                      ))}
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Door Opener stats */}
-              <Card className="glass border-border">
-                <CardHeader><CardTitle className="text-lg">Door Opener Summary</CardTitle></CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                    <div className="text-center">
-                      <div className="text-2xl font-display font-bold text-primary">{stats.totalDoorOpeners}</div>
-                      <div className="text-xs text-muted-foreground">Total Submissions</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-display font-bold text-emerald-400">{stats.confirmedPayments}</div>
-                      <div className="text-xs text-muted-foreground">Confirmed Payments</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-display font-bold text-yellow-400">{stats.totalDoorOpeners - stats.confirmedPayments}</div>
-                      <div className="text-xs text-muted-foreground">Pending</div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            <AnalyticsDashboard registrations={registrations} doorOpeners={doorOpeners} />
           )}
 
           {/* Registrations with search & filter */}
