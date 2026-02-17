@@ -37,22 +37,22 @@ const speakers = [
 ];
 
 const Speakers = () => (
-  <div className="min-h-screen pt-24 pb-16">
-    <div className="container">
+  <div className="min-h-screen pt-20 sm:pt-24 pb-12 sm:pb-16">
+    <div className="container px-4">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center mb-16"
+        className="text-center mb-10 sm:mb-16"
       >
-        <h1 className="text-4xl md:text-6xl font-display font-bold mb-4">
+        <h1 className="text-3xl sm:text-4xl md:text-6xl font-display font-bold mb-4">
           Our <span className="text-gradient">Speakers</span>
         </h1>
-        <p className="text-muted-foreground max-w-xl mx-auto">
+        <p className="text-sm sm:text-base text-muted-foreground max-w-xl mx-auto">
           Proven leaders who have successfully integrated faith with professional excellence.
         </p>
       </motion.div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
         {speakers.map((s, i) => (
           <motion.div
             key={s.name}
@@ -65,14 +65,14 @@ const Speakers = () => (
             <div className="relative aspect-[3/4] rounded-2xl overflow-hidden mb-4">
               <img
                 src={s.image}
-                alt={s.name}
+                alt={`Portrait of ${s.name}, ${s.title} at ${s.org}`}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 loading="lazy"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 p-6">
-                <h3 className="font-display font-bold text-xl text-foreground">{s.name}</h3>
-                <p className="text-primary text-sm font-medium">{s.title}</p>
+              <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6">
+                <h3 className="font-display font-bold text-lg sm:text-xl text-foreground">{s.name}</h3>
+                <p className="text-primary text-xs sm:text-sm font-medium">{s.title}</p>
                 <p className="text-xs text-muted-foreground">{s.org}</p>
               </div>
             </div>
