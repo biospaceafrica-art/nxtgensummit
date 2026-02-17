@@ -11,9 +11,9 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 const tiers = [
-  { icon: Sprout, name: "Seedling", amount: "₦10,000", desc: "Support one delegate's materials" },
-  { icon: Heart, name: "Gardener", amount: "₦50,000", desc: "Sponsor a full delegate experience" },
-  { icon: HandHeart, name: "Harvest Partner", amount: "₦100,000+", desc: "Strategic event partnership" },
+  { icon: Sprout, name: "Seedling", amount: "₦1,000,000", desc: "Support one delegate's materials" },
+  { icon: Heart, name: "Gardener", amount: "₦5,000,000", desc: "Sponsor a full delegate experience" },
+  { icon: HandHeart, name: "Harvest Partner", amount: "₦10,000,000", desc: "Strategic event partnership" },
 ];
 
 const bankDetails = {
@@ -167,9 +167,9 @@ const PlantASeed = () => {
               <Select value={formData.tier} onValueChange={(v) => setFormData({ ...formData, tier: v })}>
                 <SelectTrigger><SelectValue placeholder="Select tier" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="seedling">Seedling — ₦10,000</SelectItem>
-                  <SelectItem value="gardener">Gardener — ₦50,000</SelectItem>
-                  <SelectItem value="harvest">Harvest Partner — ₦100,000+</SelectItem>
+                  <SelectItem value="seedling">Seedling — ₦1,000,000</SelectItem>
+                  <SelectItem value="gardener">Gardener — ₦5,000,000</SelectItem>
+                  <SelectItem value="harvest">Harvest Partner — ₦10,000,000</SelectItem>
                 </SelectContent>
               </Select>
             </div>
