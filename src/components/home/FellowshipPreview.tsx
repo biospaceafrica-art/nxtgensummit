@@ -11,7 +11,7 @@ const tracks = [
   },
   {
     icon: Briefcase,
-    title: "Enterprise Track",
+    title: "Business Track",
     desc: "Focused on entrepreneurial skills, business strategy, and financial management to empower participants to build and scale ventures.",
   },
 ];
