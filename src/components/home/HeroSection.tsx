@@ -4,12 +4,16 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 
 const TARGET_DATE = new Date("2026-06-20T09:00:00+01:00");
+const VIDEO_ID = "FeoZU_jmFqQ";
+// YouTube low-res thumbnail as instant poster (no extra request — served from ytimg CDN)
+const POSTER_URL = `https://i.ytimg.com/vi/${VIDEO_ID}/maxresdefault.jpg`;
 
 const HeroSection = () => {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, mins: 0, secs: 0 });
   const [videoLoaded, setVideoLoaded] = useState(false);
-  const videoRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
 
+  // Countdown timer
   useEffect(() => {
     const tick = () => {
       const diff = TARGET_DATE.getTime() - Date.now();
@@ -26,32 +30,57 @@ const HeroSection = () => {
     return () => clearInterval(id);
   }, []);
 
-  // Lazy load video after initial paint
+  // Load iframe only after section enters viewport + small rAF delay so
+  // LCP / above-the-fold content renders first.
   useEffect(() => {
-    const timer = setTimeout(() => setVideoLoaded(true), 1500);
-    return () => clearTimeout(timer);
+    const el = sectionRef.current;
+    if (!el) return;
+
+    // On low-end / save-data connections skip the video entirely
+    const conn = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
+    if (conn?.saveData || conn?.effectiveType === "2g") return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          // Defer until after the browser has painted the initial frame
+          requestAnimationFrame(() => {
+            setTimeout(() => setVideoLoaded(true), 300);
+          });
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
   }, []);
 
   return (
-    <section className="relative min-h-[100svh] flex items-center justify-center overflow-hidden">
-      {/* Poster / fallback gradient while video loads */}
-      <div className="absolute inset-0 z-0 bg-gradient-to-br from-background via-secondary to-background" />
+    <section ref={sectionRef} className="relative min-h-[100svh] flex items-center justify-center overflow-hidden">
+      {/* Poster image — instant, zero-JS, served from CDN */}
+      <div
+        className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url('${POSTER_URL}')` }}
+        aria-hidden="true"
+      />
+      {/* Gradient fallback behind poster */}
+      <div className="absolute inset-0 z-0 bg-gradient-to-br from-background via-secondary to-background opacity-60" />
 
-      {/* YouTube Video Background — lazy loaded */}
+      {/* YouTube iframe — lazy-loaded via IntersectionObserver */}
       {videoLoaded && (
-        <div ref={videoRef} className="absolute inset-0 z-[1]">
+        <div className="absolute inset-0 z-[1] overflow-hidden">
           <iframe
-            src="https://www.youtube.com/embed/FeoZU_jmFqQ?autoplay=1&mute=1&loop=1&playlist=FeoZU_jmFqQ&controls=0&showinfo=0&modestbranding=1&rel=0&playsinline=1"
+            src={`https://www.youtube-nocookie.com/embed/${VIDEO_ID}?autoplay=1&mute=1&loop=1&playlist=${VIDEO_ID}&controls=0&showinfo=0&modestbranding=1&rel=0&playsinline=1&enablejsapi=0&iv_load_policy=3`}
             className="absolute w-[300%] h-[300%] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
             allow="autoplay; encrypted-media"
-            loading="lazy"
-            title="NextGen Summit 2026 background video showcasing event highlights"
+            title="NextGen Summit 2026 background video"
           />
         </div>
       )}
 
       {/* Overlays */}
-      <div className="absolute inset-0 z-[2] bg-background/80 backdrop-blur-sm" />
+      <div className="absolute inset-0 z-[2] bg-background/75 backdrop-blur-[2px]" />
       <div className="absolute inset-0 z-[2] bg-gradient-to-b from-background/60 via-transparent to-background" />
 
       <div className="relative z-10 container text-center py-20 sm:py-28 md:py-32 px-4">
