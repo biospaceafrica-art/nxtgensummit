@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
-import { Rocket, Lightbulb, Globe, BookOpen } from "lucide-react";
+import { Rocket, Lightbulb, Globe, BookOpen, Quote } from "lucide-react";
+import hamiltonImg from "@/assets/speakers/hamilton-gabriel.jpg";
 
 const pillars = [
   {
@@ -27,6 +28,8 @@ const pillars = [
 const AboutSection = () => (
   <section id="about" className="py-24 bg-background">
     <div className="container">
+
+      {/* Why This Summit Matters */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -42,7 +45,8 @@ const AboutSection = () => (
         </p>
       </motion.div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* Pillars Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-28">
         {pillars.map((p, i) => (
           <motion.div
             key={p.title}
@@ -60,6 +64,75 @@ const AboutSection = () => (
           </motion.div>
         ))}
       </div>
+
+      {/* Convener Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        className="relative rounded-3xl overflow-hidden glass border border-primary/20"
+      >
+        {/* Decorative gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10 pointer-events-none" />
+
+        <div className="relative grid grid-cols-1 md:grid-cols-2 gap-0">
+          {/* Image Column */}
+          <div className="relative min-h-[360px] md:min-h-[480px] overflow-hidden">
+            <img
+              src={hamiltonImg}
+              alt="Portrait of Hamilton Gabriel, Convener of NextGen Summit"
+              className="absolute inset-0 w-full h-full object-cover object-top"
+              loading="lazy"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-background/80 hidden md:block" />
+            <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent md:hidden" />
+          </div>
+
+          {/* Content Column */}
+          <div className="relative flex flex-col justify-center p-8 md:p-12">
+            <p className="text-primary text-xs font-semibold uppercase tracking-widest mb-3">Meet the Convener</p>
+
+            <h2 className="text-3xl md:text-4xl font-display font-black mb-1">
+              Hamilton Gabriel
+            </h2>
+            <p className="text-primary font-medium mb-6 text-sm">Convener, NextGen Summit</p>
+
+            {/* Pull Quote */}
+            <div className="relative mb-6">
+              <Quote className="absolute -top-2 -left-1 w-8 h-8 text-primary/20" />
+              <blockquote className="pl-8 text-muted-foreground italic leading-relaxed text-sm md:text-base">
+                "The next generation of African leaders are not waiting for permission — they are building with purpose, 
+                driven by faith, and committed to transforming every sphere of influence they touch."
+              </blockquote>
+            </div>
+
+            <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+              Hamilton Gabriel is a Kingdom-minded entrepreneur, leadership development strategist, and passionate advocate 
+              for Africa's emerging generation. With over a decade of experience bridging the gap between faith communities 
+              and the marketplace, he has equipped thousands of young professionals across Nigeria and beyond.
+            </p>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-8">
+              As the founder and convener of the NextGen Summit, Hamilton brings together Africa's brightest minds, 
+              global mentors, and Kingdom-aligned investors to create an ecosystem where faith and marketplace excellence 
+              intersect — producing leaders who are both competent and compassionate.
+            </p>
+
+            <div className="grid grid-cols-2 gap-4">
+              {[
+                { value: "10+", label: "Years in Leadership Development" },
+                { value: "5K+", label: "Young Professionals Mentored" },
+                { value: "3", label: "Nations Impacted" },
+                { value: "2026", label: "Summit Edition" },
+              ].map((stat) => (
+                <div key={stat.label} className="glass rounded-xl p-4 text-center">
+                  <div className="text-xl font-display font-bold text-primary">{stat.value}</div>
+                  <div className="text-[10px] text-muted-foreground mt-0.5 leading-tight">{stat.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </motion.div>
     </div>
   </section>
 );
