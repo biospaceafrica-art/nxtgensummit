@@ -134,7 +134,7 @@ const Fellowship = () => (
           </div>
         </motion.div>
 
-        {/* Enterprise Track */}
+        {/* Business Track */}
         <motion.div
           initial={{ opacity: 0, x: 30 }}
           whileInView={{ opacity: 1, x: 0 }}
@@ -147,7 +147,7 @@ const Fellowship = () => (
             </div>
             <div>
               <h2 className="text-xl font-display font-bold">School of Business</h2>
-              <p className="text-xs text-primary">Enterprise Track</p>
+              <p className="text-xs text-primary">Business Track</p>
             </div>
           </div>
           <p className="text-sm text-muted-foreground mb-6">

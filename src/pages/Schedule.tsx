@@ -17,7 +17,7 @@ const schedule = [
   {
     time: "10:30 AM",
     title: "Skill Accelerator — Track Sessions",
-    desc: "Career Track & Enterprise Track breakout sessions begin.",
+    desc: "Career Track & Business Track breakout sessions begin.",
     type: "workshop",
   },
   {

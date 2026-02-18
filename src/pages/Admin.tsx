@@ -179,7 +179,7 @@ const Admin = () => {
   const createWhatsAppGroups = async () => {
     const tracks: Array<{ track: "career" | "enterprise"; name: string }> = [
       { track: "career", name: "NextGen 2026 — Career Track" },
-      { track: "enterprise", name: "NextGen 2026 — Enterprise Track" },
+      { track: "enterprise", name: "NextGen 2026 — Business Track" },
     ];
     for (const t of tracks) {
       const members = registrations.filter((r) => r.fellowship_track === t.track);
