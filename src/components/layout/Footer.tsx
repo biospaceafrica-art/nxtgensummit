@@ -34,7 +34,8 @@ const Footer = () => (
             <a href="https://www.facebook.com/nextgenafricacommunity" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-primary transition-colors">Facebook</a>
             <a href="https://linkedin.com/company/the-tribe-africa" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-primary transition-colors">LinkedIn</a>
             <a href="https://tiktok.com/@thetribeafrica" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-primary transition-colors">TikTok</a>
-            <a href="https://www.instagram.com/nextgenerationsummit" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-primary transition-colors">Instagram</a>
+            <a href="https://www.instagram.com/nextgenerationafrica_?igsh=MWp4MDM2cHJhdW81aA==" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-primary transition-colors">Instagram</a>
+            <a href="https://whatsapp.com/channel/0029Va52VeNHAdNUsy8IVJ1P" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-primary transition-colors">WhatsApp</a>
           </div>
         </div>
       </div>
