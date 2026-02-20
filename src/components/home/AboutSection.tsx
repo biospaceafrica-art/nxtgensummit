@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Rocket, Lightbulb, Globe, BookOpen, Quote } from "lucide-react";
-import hamiltonImg from "@/assets/speakers/hamilton-gabriel.jpg";
+import hamiltonImg from "@/assets/speakers/hamilton-gabriel.png";
 
 const pillars = [
   {
