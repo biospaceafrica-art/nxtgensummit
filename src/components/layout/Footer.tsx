@@ -29,10 +29,12 @@ const Footer = () => (
         <div>
           <h4 className="font-display text-sm font-semibold mb-4 text-foreground">Connect</h4>
           <div className="flex flex-col gap-2">
-            <a href="https://www.youtube.com/@HamiltonGabriel" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-primary transition-colors">YouTube</a>
+            <a href="https://www.youtube.com/@Hamilton.Gabriel" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-primary transition-colors">YouTube</a>
+            <a href="https://twitter.com/thetribeafrica" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-primary transition-colors">Twitter/X</a>
+            <a href="https://facebook.com/TheTribeAfrica" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-primary transition-colors">Facebook</a>
+            <a href="https://linkedin.com/company/the-tribe-africa" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-primary transition-colors">LinkedIn</a>
+            <a href="https://tiktok.com/@thetribeafrica" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-primary transition-colors">TikTok</a>
             <a href="https://www.instagram.com/nextgenerationsummit" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-primary transition-colors">Instagram</a>
-            <a href="https://www.facebook.com/nextgenerationsummit" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-primary transition-colors">Facebook</a>
-            <a href="https://nextgenerationsummit.com/" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-primary transition-colors">Website</a>
           </div>
         </div>
       </div>

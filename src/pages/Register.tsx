@@ -64,7 +64,7 @@ const Register = () => {
           throw error;
         }
       } else {
-        toast.success("Registration submitted! Check your email for confirmation.");
+        toast.success("Registration submitted successfully! See you at the summit.");
         setFormData({ fullName: "", email: "", phone: "", status: "", track: "", selectedCourse: "" });
         setCourseSearch("");
       }
