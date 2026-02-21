@@ -80,7 +80,7 @@ const HeroSection = () => {
       )}
 
       {/* Overlays */}
-      <div className="absolute inset-0 z-[2] bg-background/75 backdrop-blur-[2px]" />
+      <div className="absolute inset-0 z-[2] bg-background/55 backdrop-blur-[1px]" />
       <div className="absolute inset-0 z-[2] bg-gradient-to-b from-background/60 via-transparent to-background" />
 
       <div className="relative z-10 container text-center py-20 sm:py-28 md:py-32 px-4">
