@@ -28,7 +28,7 @@ const phases = [
 
 const trackingMetrics = [
   { label: "Employment Rate", value: "85%", description: "of graduates secure employment within 6 months" },
-  { label: "Business Launches", value: "40+", description: "ventures started by enterprise track alumni" },
+  { label: "Business Launches", value: "40+", description: "ventures started by business track alumni" },
   { label: "Mentorship Hours", value: "500+", description: "hours of post-graduation mentorship delivered" },
   { label: "Alumni Network", value: "1,200+", description: "graduates in the TAI alumni community" },
 ];
@@ -181,10 +181,10 @@ const Scholarship = () => {
             Ready to <span className="text-gradient">Apply</span>?
           </h2>
           <p className="text-muted-foreground text-sm mb-6 max-w-md mx-auto">
-            Visit the official Tribe Africa Institute portal to submit your scholarship application.
+            Apply for the fully funded Tech Fellowship 2026 on Eventbrite. After applying, return here to confirm your application status.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <a href="https://theplatformnigeria.com/" target="_blank" rel="noopener noreferrer">
+            <a href="https://www.eventbrite.com/e/tech-fellowship-2026fully-funded-cybersecurity-data-science-software-tickets-1983649195141?aff=oddtdtcreator" target="_blank" rel="noopener noreferrer">
               <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-8">
                 Apply for Scholarship <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
