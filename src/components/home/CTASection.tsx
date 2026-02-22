@@ -23,7 +23,7 @@ const CTASection = () => (
               Register Now — It's Free
             </Button>
           </Link>
-          <a href="https://theplatformnigeria.com/" target="_blank" rel="noopener noreferrer">
+          <a href="https://www.eventbrite.com/e/tech-fellowship-2026fully-funded-cybersecurity-data-science-software-tickets-1983649195141?aff=oddtdtcreator" target="_blank" rel="noopener noreferrer">
             <Button size="lg" variant="outline" className="border-primary/40 text-primary hover:bg-primary/10 px-10 text-base">
               Apply for Scholarship
             </Button>

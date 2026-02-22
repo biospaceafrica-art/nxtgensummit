@@ -7,7 +7,7 @@ const faqs = [
   { q: "Is accommodation provided?", a: "We provide discounted rates with partner hotels in Abuja. Delegates are responsible for their own travel and stay." },
   { q: "How do I become a speaker?", a: "Speaker applications are open until March 2026. Please use the 'Plant a Seed' page to express interest." },
   { q: "Will I get a certificate?", a: "Yes! All delegates who complete the summit will receive a verified digital certificate of participation." },
-  { q: "What about the scholarship?", a: "The scholarship program is separate from attendance registration. Visit theplatformnigeria.com for scholarship applications." },
+  { q: "What about the scholarship?", a: "The scholarship program is separate from attendance registration. Apply for the fully funded Tech Fellowship 2026 on Eventbrite via our Scholarship page." },
 ];
 
 const FAQSection = () => (
