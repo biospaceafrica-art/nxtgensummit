@@ -5,21 +5,22 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Heart, Sprout, HandHeart, Landmark, Copy } from "lucide-react";
+import { Heart, Sprout, HandHeart, Landmark, Copy, Users2 } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 const tiers = [
-  { icon: Sprout, name: "Seedling", amount: "₦1,000,000", desc: "Support one delegate's materials" },
-  { icon: Heart, name: "Gardener", amount: "₦5,000,000", desc: "Sponsor a full delegate experience" },
-  { icon: HandHeart, name: "Harvest Partner", amount: "₦10,000,000", desc: "Strategic event partnership" },
+  { icon: Sprout, name: "Seedling Door Opener", amount: "₦100,000 – ₦500,000", desc: "Opens doors of career growth for 10 to 50 young persons to access 6-month intensive certification training in Cybersecurity, Data Science, Software Engineering, Project Management, UI/UX Design, Product Management, and more." },
+  { icon: Heart, name: "Gardener Door Opener", amount: "₦1,000,000 – ₦5,000,000", desc: "Opens doors of career growth for 100 to 500 young persons to access 6-month intensive certification training in Cybersecurity, Data Science, Software Engineering, Project Management, UI/UX Design, Product Management, and more." },
+  { icon: HandHeart, name: "Harvesting Door Opener", amount: "₦10,000,000+", desc: "Opens doors of career growth for 1,000 young persons to access 6-month intensive certification training in Cybersecurity, Data Science, Software Engineering, Project Management, UI/UX Design, Product Management, and more." },
+  { icon: Users2, name: "Community Door Opener", amount: "No cost", desc: "A strategic advocate who creates awareness within their community, mobilising young people to discover and access available scholarship opportunities, expanding reach and increasing participation." },
 ];
 
 const bankDetails = {
-  bankName: "Guaranty Trust Bank (GTBank)",
-  accountNumber: "0123456789",
-  accountName: "NextGen Summit Foundation",
+  bankName: "First City Monument Bank (FCMB)",
+  accountNumber: "8706307019",
+  accountName: "Tribe Youth Development Foundation",
 };
 
 const PlantASeed = () => {
@@ -167,9 +168,10 @@ const PlantASeed = () => {
               <Select value={formData.tier} onValueChange={(v) => setFormData({ ...formData, tier: v })}>
                 <SelectTrigger><SelectValue placeholder="Select tier" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="seedling">Seedling — ₦1,000,000</SelectItem>
-                  <SelectItem value="gardener">Gardener — ₦5,000,000</SelectItem>
-                  <SelectItem value="harvest">Harvest Partner — ₦10,000,000</SelectItem>
+                  <SelectItem value="seedling">Seedling Door Opener — ₦100K–₦500K</SelectItem>
+                  <SelectItem value="gardener">Gardener Door Opener — ₦1M–₦5M</SelectItem>
+                  <SelectItem value="harvest">Harvesting Door Opener — ₦10M+</SelectItem>
+                  <SelectItem value="community">Community Door Opener — No cost</SelectItem>
                 </SelectContent>
               </Select>
             </div>

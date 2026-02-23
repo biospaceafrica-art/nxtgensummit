@@ -99,9 +99,18 @@ const HeroSection = () => {
           <p className="text-sm sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-3 sm:mb-4 font-light px-2">
             Raising the Next Generation of Faith-Driven Business and Career Leaders.
           </p>
-          <p className="text-xs sm:text-base text-primary font-medium mb-8 sm:mb-10">
+          <p className="text-xs sm:text-base text-primary font-medium mb-2 sm:mb-3">
             A Strategy for Global Missions and Evangelism.
           </p>
+          <div className="inline-flex items-center gap-2 glass rounded-full px-5 py-2 sm:px-8 sm:py-3 mb-8 sm:mb-10">
+            <span className="text-sm sm:text-lg md:text-xl font-display font-bold text-foreground">
+              20th June, 2026
+            </span>
+            <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+            <span className="text-sm sm:text-lg md:text-xl font-display font-bold text-gradient">
+              11:00 AM
+            </span>
+          </div>
 
           {/* Countdown */}
           <div className="flex justify-center gap-2 sm:gap-4 md:gap-6 mb-8 sm:mb-10">

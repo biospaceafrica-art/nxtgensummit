@@ -154,6 +154,56 @@ export type Database = {
         }
         Relationships: []
       }
+      feedback: {
+        Row: {
+          comments: string | null
+          content_rating: number | null
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          organization_rating: number | null
+          overall_rating: number
+          registration_id: string | null
+          speakers_rating: number | null
+          would_recommend: boolean | null
+        }
+        Insert: {
+          comments?: string | null
+          content_rating?: number | null
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          organization_rating?: number | null
+          overall_rating: number
+          registration_id?: string | null
+          speakers_rating?: number | null
+          would_recommend?: boolean | null
+        }
+        Update: {
+          comments?: string | null
+          content_rating?: number | null
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          organization_rating?: number | null
+          overall_rating?: number
+          registration_id?: string | null
+          speakers_rating?: number | null
+          would_recommend?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_registration_id_fkey"
+            columns: ["registration_id"]
+            isOneToOne: false
+            referencedRelation: "registrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       registrations: {
         Row: {
           created_at: string

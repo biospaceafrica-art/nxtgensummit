@@ -16,6 +16,7 @@ import type { User } from "@supabase/supabase-js";
 import AnalyticsDashboard from "@/components/admin/AnalyticsDashboard";
 import PaymentConfirmation from "@/components/admin/PaymentConfirmation";
 import GalleryManager from "@/components/admin/GalleryManager";
+import FeedbackDashboard from "@/components/admin/FeedbackDashboard";
 
 type Registration = {
   id: string;
@@ -59,7 +60,7 @@ const Admin = () => {
   const [doorOpeners, setDoorOpeners] = useState<DoorOpenerSubmission[]>([]);
   const [loading, setLoading] = useState(true);
   const [newTask, setNewTask] = useState({ title: "", assigned_to: "", due_date: "" });
-  const [activeTab, setActiveTab] = useState<"overview" | "registrations" | "tasks" | "whatsapp" | "door-openers" | "analytics" | "payments" | "gallery">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "registrations" | "tasks" | "whatsapp" | "door-openers" | "analytics" | "payments" | "gallery" | "feedback">("overview");
   const [regSearch, setRegSearch] = useState("");
   const [regTrackFilter, setRegTrackFilter] = useState<"all" | "career" | "enterprise">("all");
   const [regStatusFilter, setRegStatusFilter] = useState<string>("all");
@@ -212,7 +213,7 @@ const Admin = () => {
           </div>
 
           <div className="flex flex-wrap gap-2 mb-8">
-            {(["overview", "analytics", "payments", "registrations", "door-openers", "gallery", "tasks", "whatsapp"] as const).map((tab) => (
+            {(["overview", "analytics", "payments", "registrations", "door-openers", "gallery", "tasks", "whatsapp", "feedback"] as const).map((tab) => (
               <button key={tab} className={tabClass(tab)} onClick={() => setActiveTab(tab)}>
                 {tab === "door-openers" ? "Door Openers" : tab.charAt(0).toUpperCase() + tab.slice(1)}
               </button>
@@ -447,6 +448,9 @@ const Admin = () => {
               </CardContent>
             </Card>
           )}
+
+          {/* Feedback */}
+          {activeTab === "feedback" && <FeedbackDashboard />}
         </motion.div>
       </div>
     </div>
