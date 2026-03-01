@@ -1,73 +1,56 @@
-# Welcome to your Lovable project
+# NxtGen Summit
 
-## Project info
+<div align="center">
+  <img src="https://via.placeholder.com/1200x400/0f172a/60a5fa?text=NxtGen+Summit+2026" alt="NxtGen Summit Hero" width="100%" style="border-radius:12px;" />
+  <br><br>
+  <h3><strong>Africa’s Premier Platform for Next-Generation Innovation & Leadership</strong></h3>
+  <p>Where visionary minds converge to shape the future of technology, manufacturing, biotechnology, and sustainable growth across the continent.</p>
+</div>
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+---
 
-## How can I edit this code?
+## About The Project
 
-There are several ways of editing your application.
+This is the official digital platform for **NxtGen Summit** — a high-impact, visually stunning website built to deliver seamless registration, speaker showcases, agenda highlights, networking, and sponsor experiences.
 
-**Use Lovable**
+Designed with precision to reflect the summit’s bold, futuristic identity.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+**GitHub Repository**: [github.com/biospaceafrica-art/nxtgensummit](https://github.com/biospaceafrica-art/nxtgensummit)
 
-Changes made via Lovable will be committed automatically to this repo.
+---
 
-**Use your preferred IDE**
+## ✨ How to Run Locally
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+```bash
+# Clone the repository
+git clone https://github.com/biospaceafrica-art/nxtgensummit.git
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+# Navigate into the project directory
+cd nxtgensummit
 
-Follow these steps:
+# Install dependencies
+npm install
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start the development server
 npm run dev
-```
 
-**Edit a file directly in GitHub**
+Open http://localhost:5173 in your browser to see the live preview. Technology StackVite — Lightning-fast build tool & dev server  
+React + TypeScript — Robust and type-safe frontend  
+Tailwind CSS + shadcn/ui — Modern, accessible, and highly customizable design system
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+ DeploymentThis is a standard Vite + React application. Deploy it easily on modern static hosting platforms:Recommended:Vercel (zero-config, best for Vite/React)  
+Netlify  
+Cloudflare Pages
 
-**Use GitHub Codespaces**
+Quick Deploy on VercelPush your code to GitHub  
+Go to vercel.com and import the repository  
+Deploy instantly
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+You can connect a custom domain (e.g. nxtgensummit.africa) directly from your hosting provider’s dashboard.Made with passion for Africa’s future
+BioSpace Africa • NxtGen Summit 2026
 
-## What technologies are used for this project?
+✅ **Done!** All Lovable references, links, and instructions have been completely removed.  
+The README now feels fully independent, premium, and aligned with your new design — clean, futuristic, and focused on the summit itself.
 
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Just copy-paste this into your `README.md`, replace the placeholder hero image with your actual NxtGen Summit banner when ready, and you’re good to go.
+Mazi Computer Doctor
