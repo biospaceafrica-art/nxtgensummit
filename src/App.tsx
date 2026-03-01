@@ -16,6 +16,8 @@ import Feedback from "./pages/Feedback";
 import Admin from "./pages/Admin";
 import AdminLogin from "./pages/AdminLogin";
 import Gallery from "./pages/Gallery";
+import Volunteer from "./pages/Volunteer";
+import Networking from "./pages/Networking";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +40,8 @@ const App = () => (
             <Route path="/plant-a-seed" element={<PlantASeed />} />
             <Route path="/feedback" element={<Feedback />} />
             <Route path="/gallery" element={<Gallery />} />
+            <Route path="/volunteer" element={<Volunteer />} />
+            <Route path="/networking" element={<Networking />} />
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="*" element={<NotFound />} />

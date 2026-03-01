@@ -10,8 +10,9 @@ const navLinks = [
   { label: "Speakers", href: "/speakers" },
   { label: "Schedule", href: "/schedule" },
   { label: "Fellowship", href: "/fellowship" },
+  { label: "Volunteer", href: "/volunteer" },
+  { label: "Networking", href: "/networking" },
   { label: "Be a Door Opener", href: "/plant-a-seed" },
-  { label: "FAQ", href: "/#faq" },
 ];
 
 const Navbar = () => {
