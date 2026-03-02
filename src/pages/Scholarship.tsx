@@ -1,7 +1,11 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
-import { GraduationCap, BookOpen, Users, TrendingUp, CheckCircle, ArrowRight } from "lucide-react";
+import { GraduationCap, BookOpen, Users, TrendingUp, CheckCircle, ArrowRight, Search, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const phases = [
   {
@@ -34,6 +38,34 @@ const trackingMetrics = [
 ];
 
 const Scholarship = () => {
+  const [checkerEmail, setCheckerEmail] = useState("");
+  const [checking, setChecking] = useState(false);
+  const [checkResult, setCheckResult] = useState<null | { found: boolean; name?: string; track?: string; confirmed?: boolean }>(null);
+
+  const handleCheckStatus = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!checkerEmail.trim()) return;
+    setChecking(true);
+    setCheckResult(null);
+    try {
+      const { data, error } = await supabase
+        .from("registrations")
+        .select("full_name, fellowship_track, payment_confirmed")
+        .eq("email", checkerEmail.trim().toLowerCase())
+        .maybeSingle();
+      if (error) throw error;
+      if (data) {
+        setCheckResult({ found: true, name: data.full_name, track: data.fellowship_track, confirmed: data.payment_confirmed });
+      } else {
+        setCheckResult({ found: false });
+      }
+    } catch {
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setChecking(false);
+    }
+  };
+
   return (
     <div className="min-h-screen pt-20 sm:pt-24 pb-12 sm:pb-16">
       <div className="container px-4">
@@ -167,6 +199,52 @@ const Scholarship = () => {
             <p className="text-sm font-semibold text-primary">
               This task must be completed by all scholarship students.
             </p>
+          </div>
+        </motion.section>
+
+        {/* Status Checker */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mb-20 max-w-xl mx-auto"
+        >
+          <div className="glass rounded-2xl p-6 sm:p-8">
+            <h2 className="text-xl sm:text-2xl font-display font-bold text-center mb-2">
+              Check Application <span className="text-gradient">Status</span>
+            </h2>
+            <p className="text-sm text-muted-foreground text-center mb-5">
+              Enter your registered email to check if your application has been confirmed.
+            </p>
+            <form onSubmit={handleCheckStatus} className="flex gap-2">
+              <Input
+                type="email"
+                placeholder="Enter your email..."
+                value={checkerEmail}
+                onChange={(e) => { setCheckerEmail(e.target.value); setCheckResult(null); }}
+                required
+              />
+              <Button type="submit" disabled={checking} className="bg-primary text-primary-foreground shrink-0">
+                {checking ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+              </Button>
+            </form>
+            {checkResult && (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-4">
+                {checkResult.found ? (
+                  <div className="rounded-xl bg-primary/10 p-4 text-sm space-y-1">
+                    <p className="font-semibold text-primary">✅ Registration Found!</p>
+                    <p><span className="text-muted-foreground">Name:</span> {checkResult.name}</p>
+                    <p><span className="text-muted-foreground">Track:</span> <span className="capitalize">{checkResult.track}</span></p>
+                    <p><span className="text-muted-foreground">Payment:</span> {checkResult.confirmed ? <span className="text-primary font-semibold">Confirmed</span> : <span className="text-yellow-500 font-semibold">Pending</span>}</p>
+                  </div>
+                ) : (
+                  <div className="rounded-xl bg-destructive/10 p-4 text-sm">
+                    <p className="font-semibold text-destructive">❌ No registration found for this email.</p>
+                    <p className="text-muted-foreground mt-1">Please register first or check the email address.</p>
+                  </div>
+                )}
+              </motion.div>
+            )}
           </div>
         </motion.section>
 
