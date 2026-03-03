@@ -246,7 +246,24 @@ const Networking = () => {
           <h1 className="text-3xl sm:text-5xl font-display font-bold mb-3">
             Networking <span className="text-gradient">Hub</span>
           </h1>
-          <p className="text-muted-foreground text-sm sm:text-base">Connect with fellow attendees, speakers, and sponsors.</p>
+          <p className="text-muted-foreground text-sm sm:text-base mb-4">Connect with fellow attendees, speakers, and sponsors.</p>
+          <div className="flex justify-center gap-3 flex-wrap">
+            <a href="https://whatsapp.com/channel/0029Va52VeNHAdNUsy8IVJ1P" target="_blank" rel="noopener noreferrer">
+              <Button variant="outline" size="sm" className="gap-2 border-primary/30 text-primary hover:bg-primary/10">
+                <MessageCircle className="w-4 h-4" /> WhatsApp Community
+              </Button>
+            </a>
+            <a href="https://www.instagram.com/nextgenerationafrica_?igsh=MWp4MDM2cHJhdW81aA==" target="_blank" rel="noopener noreferrer">
+              <Button variant="outline" size="sm" className="gap-2 border-primary/30 text-primary hover:bg-primary/10">
+                Instagram
+              </Button>
+            </a>
+            <a href="https://www.facebook.com/nextgenafricacommunity" target="_blank" rel="noopener noreferrer">
+              <Button variant="outline" size="sm" className="gap-2 border-primary/30 text-primary hover:bg-primary/10">
+                Facebook
+              </Button>
+            </a>
+          </div>
         </motion.div>
 
         {/* Profile setup/edit */}
