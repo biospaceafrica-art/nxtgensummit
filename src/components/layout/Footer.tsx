@@ -36,7 +36,7 @@ const Footer = () => (
             <a href="https://tiktok.com/@thetribeafrica" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-primary transition-colors">TikTok</a>
             <a href="https://www.instagram.com/nextgenerationafrica_?igsh=MWp4MDM2cHJhdW81aA==" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-primary transition-colors">Instagram</a>
             <a href="https://whatsapp.com/channel/0029Va52VeNHAdNUsy8IVJ1P" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-primary transition-colors">WhatsApp</a>
-            <a href="https://chat.whatsapp.com/YOUR_COMMUNITY_LINK" target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-primary hover:text-primary/80 transition-colors">🟢 Join WhatsApp Community</a>
+            <a href="https://whatsapp.com/channel/0029Va52VeNHAdNUsy8IVJ1P" target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-primary hover:text-primary/80 transition-colors">🟢 Join WhatsApp Community</a>
           </div>
         </div>
       </div>
