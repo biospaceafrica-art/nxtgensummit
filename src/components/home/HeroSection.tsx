@@ -102,14 +102,25 @@ const HeroSection = () => {
           <p className="text-xs sm:text-base text-primary font-medium mb-2 sm:mb-3">
             A Strategy for Global Missions and Evangelism.
           </p>
-          <div className="inline-flex items-center gap-2 glass rounded-full px-5 py-2 sm:px-8 sm:py-3 mb-8 sm:mb-10">
-            <span className="text-sm sm:text-lg md:text-xl font-display font-bold text-foreground">
-              20th June, 2026
-            </span>
-            <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-            <span className="text-sm sm:text-lg md:text-xl font-display font-bold text-gradient">
-              11:00 AM
-            </span>
+          {/* Marquee — date & location scroll */}
+          <div className="overflow-hidden glass rounded-full px-2 py-2 sm:py-3 mb-8 sm:mb-10 max-w-lg mx-auto">
+            <motion.div
+              animate={{ x: ["100%", "-100%"] }}
+              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+              className="flex items-center gap-4 whitespace-nowrap"
+            >
+              <span className="text-sm sm:text-lg md:text-xl font-display font-bold text-foreground">
+                📅 20th June, 2026
+              </span>
+              <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+              <span className="text-sm sm:text-lg md:text-xl font-display font-bold text-gradient">
+                🕚 11:00 AM
+              </span>
+              <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+              <span className="text-sm sm:text-lg md:text-xl font-display font-bold text-foreground">
+                📍 The Purple Place, Lokogoma, Abuja
+              </span>
+            </motion.div>
           </div>
 
           {/* Countdown */}
