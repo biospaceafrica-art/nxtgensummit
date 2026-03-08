@@ -62,7 +62,7 @@ const Admin = () => {
   const [doorOpeners, setDoorOpeners] = useState<DoorOpenerSubmission[]>([]);
   const [loading, setLoading] = useState(true);
   const [newTask, setNewTask] = useState({ title: "", assigned_to: "", due_date: "" });
-  const [activeTab, setActiveTab] = useState<"overview" | "registrations" | "tasks" | "whatsapp" | "door-openers" | "analytics" | "payments" | "gallery" | "feedback" | "volunteers">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "registrations" | "tasks" | "whatsapp" | "door-openers" | "analytics" | "payments" | "gallery" | "feedback" | "volunteers" | "check-ins">("overview");
   const [regSearch, setRegSearch] = useState("");
   const [regTrackFilter, setRegTrackFilter] = useState<"all" | "career" | "enterprise">("all");
   const [regStatusFilter, setRegStatusFilter] = useState<string>("all");
