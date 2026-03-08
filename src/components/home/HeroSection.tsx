@@ -137,24 +137,43 @@ const HeroSection = () => {
             </motion.div>
           </div>
 
-          {/* Countdown */}
-          <div className="flex justify-center gap-2 sm:gap-4 md:gap-6 mb-8 sm:mb-10">
-            {[
-              { val: timeLeft.days, label: "Days" },
-              { val: timeLeft.hours, label: "Hours" },
-              { val: timeLeft.mins, label: "Mins" },
-              { val: timeLeft.secs, label: "Secs" },
-            ].map((item) => (
-              <div key={item.label} className="glass rounded-xl px-3 py-2 sm:px-6 sm:py-4 min-w-[60px] sm:min-w-[70px]">
-                <div className="text-xl sm:text-3xl md:text-4xl font-bold text-foreground font-display">
-                  {String(item.val).padStart(2, "0")}
-                </div>
-                <div className="text-[9px] sm:text-xs text-muted-foreground uppercase tracking-widest mt-1">
-                  {item.label}
-                </div>
+          {/* Countdown or Live Banner */}
+          {isLive ? (
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 200 }}
+              className="glass rounded-2xl px-6 py-4 sm:px-10 sm:py-6 mb-8 sm:mb-10 inline-block border border-primary/40"
+            >
+              <div className="flex items-center gap-3">
+                <span className="relative flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500" />
+                </span>
+                <span className="text-lg sm:text-2xl font-display font-black text-foreground tracking-wide">
+                  🔴 EVENT IS LIVE
+                </span>
               </div>
-            ))}
-          </div>
+            </motion.div>
+          ) : (
+            <div className="flex justify-center gap-2 sm:gap-4 md:gap-6 mb-8 sm:mb-10">
+              {[
+                { val: timeLeft.days, label: "Days" },
+                { val: timeLeft.hours, label: "Hours" },
+                { val: timeLeft.mins, label: "Mins" },
+                { val: timeLeft.secs, label: "Secs" },
+              ].map((item) => (
+                <div key={item.label} className="glass rounded-xl px-3 py-2 sm:px-6 sm:py-4 min-w-[60px] sm:min-w-[70px]">
+                  <div className="text-xl sm:text-3xl md:text-4xl font-bold text-foreground font-display">
+                    {String(item.val).padStart(2, "0")}
+                  </div>
+                  <div className="text-[9px] sm:text-xs text-muted-foreground uppercase tracking-widest mt-1">
+                    {item.label}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
 
           <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 px-4 sm:px-0">
             <Link to="/register">

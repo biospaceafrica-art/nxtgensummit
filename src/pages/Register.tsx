@@ -66,6 +66,13 @@ const Register = () => {
         }
       } else {
         toast.success("Registration submitted successfully! See you at the summit.");
+        const badgeParams = new URLSearchParams({
+          name: formData.fullName,
+          email: formData.email,
+          track: formData.track,
+          course: formData.selectedCourse,
+        });
+        navigate(`/badge?${badgeParams.toString()}`);
         setFormData({ fullName: "", email: "", phone: "", status: "", track: "", selectedCourse: "" });
         setCourseSearch("");
       }
