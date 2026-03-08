@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import FloatingParticles from "./FloatingParticles";
 
 const TARGET_DATE = new Date("2026-06-20T09:00:00+01:00");
 const VIDEO_ID = "FeoZU_jmFqQ";
