@@ -18,6 +18,7 @@ import PaymentConfirmation from "@/components/admin/PaymentConfirmation";
 import GalleryManager from "@/components/admin/GalleryManager";
 import FeedbackDashboard from "@/components/admin/FeedbackDashboard";
 import VolunteerAdmin from "@/components/admin/VolunteerAdmin";
+import CheckInDashboard from "@/components/admin/CheckInDashboard";
 
 type Registration = {
   id: string;
@@ -61,7 +62,7 @@ const Admin = () => {
   const [doorOpeners, setDoorOpeners] = useState<DoorOpenerSubmission[]>([]);
   const [loading, setLoading] = useState(true);
   const [newTask, setNewTask] = useState({ title: "", assigned_to: "", due_date: "" });
-  const [activeTab, setActiveTab] = useState<"overview" | "registrations" | "tasks" | "whatsapp" | "door-openers" | "analytics" | "payments" | "gallery" | "feedback" | "volunteers">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "registrations" | "tasks" | "whatsapp" | "door-openers" | "analytics" | "payments" | "gallery" | "feedback" | "volunteers" | "check-ins">("overview");
   const [regSearch, setRegSearch] = useState("");
   const [regTrackFilter, setRegTrackFilter] = useState<"all" | "career" | "enterprise">("all");
   const [regStatusFilter, setRegStatusFilter] = useState<string>("all");
@@ -214,9 +215,9 @@ const Admin = () => {
           </div>
 
           <div className="flex flex-wrap gap-2 mb-8">
-            {(["overview", "analytics", "payments", "registrations", "door-openers", "gallery", "tasks", "whatsapp", "feedback", "volunteers"] as const).map((tab) => (
+            {(["overview", "analytics", "payments", "registrations", "check-ins", "door-openers", "gallery", "tasks", "whatsapp", "feedback", "volunteers"] as const).map((tab) => (
               <button key={tab} className={tabClass(tab)} onClick={() => setActiveTab(tab)}>
-                {tab === "door-openers" ? "Door Openers" : tab.charAt(0).toUpperCase() + tab.slice(1)}
+                {tab === "door-openers" ? "Door Openers" : tab === "check-ins" ? "Check-ins" : tab.charAt(0).toUpperCase() + tab.slice(1)}
               </button>
             ))}
           </div>
@@ -478,6 +479,9 @@ const Admin = () => {
 
           {/* Volunteers */}
           {activeTab === "volunteers" && <VolunteerAdmin />}
+
+          {/* Check-ins */}
+          {activeTab === "check-ins" && <CheckInDashboard totalRegistrations={stats.total} />}
         </motion.div>
       </div>
     </div>
