@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Users, TrendingUp, CheckCircle, ListTodo, Plus, Trash2,
-  DollarSign, LogOut, Search,
+  DollarSign, LogOut, Search, Send,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
