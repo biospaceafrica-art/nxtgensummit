@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, UserCheck, Users, Clock } from "lucide-react";
+import { Search, UserCheck, Users, Clock, Download } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 type CheckInRow = {
   id: string;
@@ -80,8 +81,34 @@ const CheckInDashboard = ({ totalRegistrations }: Props) => {
     return <p className="text-center text-muted-foreground py-8">Loading check-ins...</p>;
   }
 
+  const exportCSV = () => {
+    const headers = ["Name", "Email", "Track", "Course", "Method", "Checked In At"];
+    const rows = checkIns.map((c) => [
+      c.registration?.full_name || "Unknown",
+      c.registration?.email || "",
+      c.registration?.fellowship_track === "enterprise" ? "Business" : "Career",
+      c.registration?.selected_course || "",
+      c.method.replace("_", " "),
+      new Date(c.checked_in_at).toLocaleString(),
+    ]);
+    const csv = [headers, ...rows].map((r) => r.map((v) => `"${v}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `check-ins-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-6">
+      {/* Export Button */}
+      <div className="flex justify-end">
+        <Button onClick={exportCSV} variant="outline" size="sm" className="border-primary/40 text-primary" disabled={checkIns.length === 0}>
+          <Download className="w-4 h-4 mr-2" /> Export CSV
+        </Button>
+      </div>
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card className="glass border-border">
