@@ -217,7 +217,7 @@ const Admin = () => {
           <div className="flex flex-wrap gap-2 mb-8">
             {(["overview", "analytics", "payments", "registrations", "check-ins", "door-openers", "gallery", "tasks", "whatsapp", "feedback", "volunteers"] as const).map((tab) => (
               <button key={tab} className={tabClass(tab)} onClick={() => setActiveTab(tab)}>
-                {tab === "door-openers" ? "Door Openers" : tab.charAt(0).toUpperCase() + tab.slice(1)}
+                {tab === "door-openers" ? "Door Openers" : tab === "check-ins" ? "Check-ins" : tab.charAt(0).toUpperCase() + tab.slice(1)}
               </button>
             ))}
           </div>
