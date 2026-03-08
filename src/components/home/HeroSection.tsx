@@ -19,7 +19,10 @@ const HeroSection = () => {
   useEffect(() => {
     const tick = () => {
       const diff = TARGET_DATE.getTime() - Date.now();
-      if (diff <= 0) return;
+      if (diff <= 0) {
+        setIsLive(true);
+        return;
+      }
       setTimeLeft({
         days: Math.floor(diff / 86400000),
         hours: Math.floor((diff % 86400000) / 3600000),
