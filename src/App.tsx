@@ -19,6 +19,7 @@ import Gallery from "./pages/Gallery";
 import Volunteer from "./pages/Volunteer";
 import Networking from "./pages/Networking";
 import Badge from "./pages/Badge";
+import CheckIn from "./pages/CheckIn";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -44,6 +45,7 @@ const App = () => (
             <Route path="/volunteer" element={<Volunteer />} />
             <Route path="/networking" element={<Networking />} />
             <Route path="/badge" element={<Badge />} />
+            <Route path="/check-in" element={<CheckIn />} />
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="*" element={<NotFound />} />
