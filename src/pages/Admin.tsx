@@ -18,6 +18,7 @@ import PaymentConfirmation from "@/components/admin/PaymentConfirmation";
 import GalleryManager from "@/components/admin/GalleryManager";
 import FeedbackDashboard from "@/components/admin/FeedbackDashboard";
 import VolunteerAdmin from "@/components/admin/VolunteerAdmin";
+import CheckInDashboard from "@/components/admin/CheckInDashboard";
 
 type Registration = {
   id: string;
