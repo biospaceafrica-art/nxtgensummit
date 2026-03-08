@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +25,7 @@ const careerCourses = [
 ];
 
 const Register = () => {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [courseSearch, setCourseSearch] = useState("");
   const [formData, setFormData] = useState({
@@ -65,6 +66,13 @@ const Register = () => {
         }
       } else {
         toast.success("Registration submitted successfully! See you at the summit.");
+        const badgeParams = new URLSearchParams({
+          name: formData.fullName,
+          email: formData.email,
+          track: formData.track,
+          course: formData.selectedCourse,
+        });
+        navigate(`/badge?${badgeParams.toString()}`);
         setFormData({ fullName: "", email: "", phone: "", status: "", track: "", selectedCourse: "" });
         setCourseSearch("");
       }
