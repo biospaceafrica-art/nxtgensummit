@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Users, TrendingUp, CheckCircle, ListTodo, Plus, Trash2,
-  DollarSign, LogOut, Search,
+  DollarSign, LogOut, Search, Send,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -451,7 +451,30 @@ const Admin = () => {
           )}
 
           {/* Feedback */}
-          {activeTab === "feedback" && <FeedbackDashboard />}
+          {activeTab === "feedback" && (
+            <div className="space-y-6">
+              <div className="flex justify-end">
+                <Button
+                  onClick={async () => {
+                    const session = await supabase.auth.getSession();
+                    const token = session.data.session?.access_token;
+                    const res = await supabase.functions.invoke("send-feedback-request", {
+                      headers: { Authorization: `Bearer ${token}` },
+                    });
+                    if (res.error) {
+                      toast.error("Failed to send feedback requests");
+                    } else {
+                      toast.success(`Feedback requests sent to ${res.data?.participants_notified || 0} participants`);
+                    }
+                  }}
+                  className="bg-primary text-primary-foreground hover:bg-primary/90"
+                >
+                  <Send className="w-4 h-4 mr-2" /> Send Feedback Requests
+                </Button>
+              </div>
+              <FeedbackDashboard />
+            </div>
+          )}
 
           {/* Volunteers */}
           {activeTab === "volunteers" && <VolunteerAdmin />}

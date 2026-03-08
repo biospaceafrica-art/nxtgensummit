@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import FloatingParticles from "./FloatingParticles";
 
 const TARGET_DATE = new Date("2026-06-20T09:00:00+01:00");
 const VIDEO_ID = "FeoZU_jmFqQ";
@@ -82,6 +83,9 @@ const HeroSection = () => {
       {/* Overlays */}
       <div className="absolute inset-0 z-[2] bg-background/55 backdrop-blur-[1px]" />
       <div className="absolute inset-0 z-[2] bg-gradient-to-b from-background/60 via-transparent to-background" />
+
+      {/* Floating particles */}
+      <FloatingParticles count={25} />
 
       <div className="relative z-10 container text-center py-20 sm:py-28 md:py-32 px-4">
         <motion.div
