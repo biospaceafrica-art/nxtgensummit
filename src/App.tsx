@@ -18,6 +18,7 @@ import AdminLogin from "./pages/AdminLogin";
 import Gallery from "./pages/Gallery";
 import Volunteer from "./pages/Volunteer";
 import Networking from "./pages/Networking";
+import Badge from "./pages/Badge";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
