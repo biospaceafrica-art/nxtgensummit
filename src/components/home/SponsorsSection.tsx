@@ -104,7 +104,7 @@ const SponsorsSection = () => (
                     </span>
                   ) : (
                     <img
-                      src={(logo as { src: string }).src}
+                      src={(logo as unknown as { src: string }).src}
                       alt={logo.name}
                       className="h-8 sm:h-10 object-contain"
                       loading="lazy"
