@@ -47,6 +47,38 @@ export type Database = {
         }
         Relationships: []
       }
+      check_ins: {
+        Row: {
+          checked_in_at: string
+          checked_in_by: string | null
+          id: string
+          method: string
+          registration_id: string
+        }
+        Insert: {
+          checked_in_at?: string
+          checked_in_by?: string | null
+          id?: string
+          method?: string
+          registration_id: string
+        }
+        Update: {
+          checked_in_at?: string
+          checked_in_by?: string | null
+          id?: string
+          method?: string
+          registration_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "check_ins_registration_id_fkey"
+            columns: ["registration_id"]
+            isOneToOne: true
+            referencedRelation: "registrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       connections: {
         Row: {
           created_at: string
