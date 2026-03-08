@@ -479,6 +479,9 @@ const Admin = () => {
 
           {/* Volunteers */}
           {activeTab === "volunteers" && <VolunteerAdmin />}
+
+          {/* Check-ins */}
+          {activeTab === "check-ins" && <CheckInDashboard totalRegistrations={stats.total} />}
         </motion.div>
       </div>
     </div>
