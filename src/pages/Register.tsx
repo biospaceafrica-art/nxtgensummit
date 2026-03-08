@@ -25,6 +25,7 @@ const careerCourses = [
 ];
 
 const Register = () => {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [courseSearch, setCourseSearch] = useState("");
   const [formData, setFormData] = useState({
