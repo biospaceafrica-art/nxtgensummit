@@ -66,6 +66,15 @@ const Register = () => {
         }
       } else {
         toast.success("Registration submitted successfully! See you at the summit.");
+        // Send welcome email (fire and forget)
+        supabase.functions.invoke("send-welcome-email", {
+          body: {
+            name: formData.fullName,
+            email: formData.email,
+            track: formData.track,
+            course: formData.selectedCourse,
+          },
+        }).catch(() => {});
         const badgeParams = new URLSearchParams({
           name: formData.fullName,
           email: formData.email,
