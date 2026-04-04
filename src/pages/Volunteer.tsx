@@ -72,7 +72,7 @@ const Volunteer = () => {
             Call for <span className="text-gradient">Volunteers</span>
           </h1>
           <p className="text-muted-foreground max-w-2xl mx-auto text-sm sm:text-base">
-            The Next Generation Summit 2026 is coming to Abuja on 20th June — and we're inviting YOU to be part of something bigger than just an event.
+            The Next Generation Summit 2026 is coming to Abuja on 27th June — and we're inviting YOU to be part of something bigger than just an event. — and we're inviting YOU to be part of something bigger than just an event.
           </p>
         </motion.div>
 

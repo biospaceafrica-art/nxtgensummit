@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import FloatingParticles from "./FloatingParticles";
 
-const TARGET_DATE = new Date("2026-06-20T09:00:00+01:00");
+const TARGET_DATE = new Date("2026-06-27T09:00:00+01:00");
 const VIDEO_ID = "FeoZU_jmFqQ";
 // YouTube low-res thumbnail as instant poster (no extra request — served from ytimg CDN)
 const POSTER_URL = `https://i.ytimg.com/vi/${VIDEO_ID}/maxresdefault.jpg`;
@@ -121,7 +121,7 @@ const HeroSection = () => {
               {[0, 1].map((i) => (
                 <div key={i} className="flex items-center gap-5 px-4">
                   <span className="text-sm sm:text-lg md:text-xl font-display font-bold text-foreground tracking-wide">
-                    📅 20th June, 2026
+                    📅 27th June, 2026
                   </span>
                   <span className="w-1 h-1 rounded-full bg-primary/60 shrink-0" />
                   <span className="text-sm sm:text-lg md:text-xl font-display font-bold text-gradient tracking-wide">

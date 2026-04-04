@@ -11,7 +11,7 @@ const Footer = () => (
             Next Generation Summit 2026 — Raising the Next Generation of Faith-Driven Business and Career Leaders.
             A Strategy for Global Missions and Evangelism.
           </p>
-          <p className="text-xs text-muted-foreground mt-4">The Purple Place, Lokogoma, Abuja • June 20, 2026</p>
+          <p className="text-xs text-muted-foreground mt-4">The Purple Place, Lokogoma, Abuja • <p className="text-xs text-muted-foreground mt-4">The Purple Place, Lokogoma, Abuja • June 27, 2026</p></p>
         </div>
 
         <div>

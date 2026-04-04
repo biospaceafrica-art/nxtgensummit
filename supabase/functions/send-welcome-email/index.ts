@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
           <p style="font-size: 16px; color: #1a1a2e;">Hi <strong>${name}</strong>,</p>
           <p style="font-size: 15px; color: #333;">You're officially registered for <strong>NextGen Summit 2026</strong> as a <strong>${trackLabel}</strong>${course ? ` — <em>${course}</em>` : ""}.</p>
           <div style="background: #f8f5ff; border-radius: 8px; padding: 20px; margin: 24px 0;">
-            <p style="margin: 4px 0; font-size: 14px; color: #555;">📅 <strong>Date:</strong> June 20, 2026 | 11:00 AM</p>
+            <p style="margin: 4px 0; font-size: 14px; color: #555;">📅 <strong>Date:</strong> June 27, 2026 | 11:00 AM</p>
             <p style="margin: 4px 0; font-size: 14px; color: #555;">📍 <strong>Venue:</strong> The Purple Place, Lokogoma, Abuja</p>
           </div>
           <div style="text-align: center; margin: 28px 0;">

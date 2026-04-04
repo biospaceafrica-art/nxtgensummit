@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { Search, UserCheck, Users, Clock, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import BulkCheckIn from "./BulkCheckIn";
 
 type CheckInRow = {
   id: string;
@@ -103,6 +104,9 @@ const CheckInDashboard = ({ totalRegistrations }: Props) => {
 
   return (
     <div className="space-y-6">
+      {/* Bulk Check-in */}
+      <BulkCheckIn onComplete={fetchCheckIns} />
+
       {/* Export Button */}
       <div className="flex justify-end">
         <Button onClick={exportCSV} variant="outline" size="sm" className="border-primary/40 text-primary" disabled={checkIns.length === 0}>
