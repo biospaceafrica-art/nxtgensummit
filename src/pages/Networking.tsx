@@ -5,9 +5,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Search, UserPlus, MessageCircle, User, Send } from "lucide-react";
+import {
+  Search, UserPlus, MessageCircle, User, Send, Users, Briefcase,
+  GraduationCap, Filter, Shield,
+} from "lucide-react";
 import type { User as AuthUser } from "@supabase/supabase-js";
 
 type Profile = {
@@ -17,6 +21,14 @@ type Profile = {
   organization: string | null;
   bio: string | null;
   photo_url: string | null;
+};
+
+type Registration = {
+  id: string;
+  full_name: string;
+  fellowship_track: "career" | "enterprise";
+  selected_course: string | null;
+  current_status: string;
 };
 
 type Connection = {
@@ -38,9 +50,11 @@ type Message = {
 const Networking = () => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [connections, setConnections] = useState<Connection[]>([]);
   const [myProfile, setMyProfile] = useState<Profile | null>(null);
   const [search, setSearch] = useState("");
+  const [trackFilter, setTrackFilter] = useState<"all" | "career" | "enterprise">("all");
   const [showSetup, setShowSetup] = useState(false);
   const [form, setForm] = useState({ full_name: "", organization: "", bio: "" });
   const [saving, setSaving] = useState(false);
@@ -49,24 +63,15 @@ const Networking = () => {
   const [msgText, setMsgText] = useState("");
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-    });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
-      setUser(session?.user ?? null);
-    });
+    supabase.auth.getSession().then(({ data: { session } }) => setUser(session?.user ?? null));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => setUser(session?.user ?? null));
     return () => subscription.unsubscribe();
   }, []);
 
-  useEffect(() => {
-    fetchProfiles();
-  }, []);
+  useEffect(() => { fetchPublicData(); }, []);
 
   useEffect(() => {
-    if (user) {
-      fetchMyProfile();
-      fetchConnections();
-    }
+    if (user) { fetchMyProfile(); fetchConnections(); }
   }, [user]);
 
   useEffect(() => {
@@ -79,17 +84,19 @@ const Networking = () => {
         if (
           (msg.sender_id === user.id && msg.recipient_id === chatWith.user_id) ||
           (msg.sender_id === chatWith.user_id && msg.recipient_id === user.id)
-        ) {
-          setMessages((prev) => [...prev, msg]);
-        }
+        ) setMessages((prev) => [...prev, msg]);
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [chatWith, user]);
 
-  const fetchProfiles = async () => {
-    const { data } = await supabase.from("networking_profiles").select("id, user_id, full_name, organization, bio, photo_url").order("created_at", { ascending: false });
-    if (data) setProfiles(data);
+  const fetchPublicData = async () => {
+    const [profRes, regRes] = await Promise.all([
+      supabase.from("networking_profiles").select("id, user_id, full_name, organization, bio, photo_url").order("created_at", { ascending: false }),
+      supabase.from("registrations").select("id, full_name, fellowship_track, selected_course, current_status").order("created_at", { ascending: false }),
+    ]);
+    if (profRes.data) setProfiles(profRes.data);
+    if (regRes.data) setRegistrations(regRes.data as Registration[]);
   };
 
   const fetchMyProfile = async () => {
@@ -124,7 +131,7 @@ const Networking = () => {
     setSaving(false);
     setShowSetup(false);
     toast.success("Profile saved!");
-    fetchProfiles();
+    fetchPublicData();
     fetchMyProfile();
   };
 
@@ -149,69 +156,52 @@ const Networking = () => {
 
   const getConnectionStatus = (profileUserId: string) => {
     if (!user) return null;
-    const conn = connections.find(
+    return connections.find(
       (c) => (c.requester_id === user.id && c.recipient_id === profileUserId) ||
              (c.recipient_id === user.id && c.requester_id === profileUserId)
-    );
-    return conn || null;
+    ) || null;
   };
 
-  const filtered = profiles.filter((p) =>
-    !search || p.full_name.toLowerCase().includes(search.toLowerCase()) ||
-    (p.organization || "").toLowerCase().includes(search.toLowerCase())
-  );
+  // Merge registrations with profiles for track info
+  const getTrackForProfile = (profileName: string) => {
+    const reg = registrations.find((r) => r.full_name.toLowerCase() === profileName.toLowerCase());
+    return reg?.fellowship_track ?? null;
+  };
 
-  // Not logged in view
-  if (!user) {
-    return (
-      <div className="min-h-screen pt-24 pb-16">
-        <div className="container max-w-3xl px-4 text-center">
-          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}>
-            <h1 className="text-3xl sm:text-5xl font-display font-bold mb-4">
-              Networking <span className="text-gradient">Hub</span>
-            </h1>
-            <p className="text-muted-foreground mb-6">Connect with fellow attendees, speakers, and sponsors. Sign in to create your profile and start networking.</p>
-            <Button onClick={() => toast.info("Please register first at /register, then log in.")} className="bg-primary text-primary-foreground">
-              Sign In to Network
-            </Button>
-          </motion.div>
+  const getCourseForProfile = (profileName: string) => {
+    const reg = registrations.find((r) => r.full_name.toLowerCase() === profileName.toLowerCase());
+    return reg?.selected_course ?? null;
+  };
 
-          {/* Still show profiles publicly */}
-          <div className="mt-12">
-            <div className="relative max-w-md mx-auto mb-6">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input placeholder="Search attendees..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {filtered.map((p) => (
-                <Card key={p.id} className="glass border-border">
-                  <CardContent className="p-5">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                        <User className="w-5 h-5 text-primary" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-sm">{p.full_name}</h3>
-                        {p.organization && <p className="text-xs text-muted-foreground">{p.organization}</p>}
-                      </div>
-                    </div>
-                    {p.bio && <p className="text-xs text-muted-foreground line-clamp-2">{p.bio}</p>}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // Filter profiles
+  const filtered = profiles.filter((p) => {
+    if (search && !p.full_name.toLowerCase().includes(search.toLowerCase()) &&
+        !(p.organization || "").toLowerCase().includes(search.toLowerCase())) return false;
+    if (trackFilter !== "all") {
+      const track = getTrackForProfile(p.full_name);
+      if (track !== trackFilter) return false;
+    }
+    return true;
+  });
 
-  // Chat modal
-  if (chatWith) {
+  // Attendee directory: registrations not yet on networking (public, no sensitive data)
+  const profileUserNames = new Set(profiles.map((p) => p.full_name.toLowerCase()));
+  const directoryAttendees = registrations.filter((r) => {
+    if (profileUserNames.has(r.full_name.toLowerCase())) return false;
+    if (search && !r.full_name.toLowerCase().includes(search.toLowerCase())) return false;
+    if (trackFilter !== "all" && r.fellowship_track !== trackFilter) return false;
+    return true;
+  });
+
+  const careerCount = registrations.filter((r) => r.fellowship_track === "career").length;
+  const businessCount = registrations.filter((r) => r.fellowship_track === "enterprise").length;
+
+  // Chat view
+  if (chatWith && user) {
     return (
       <div className="min-h-screen pt-24 pb-16">
         <div className="container max-w-2xl px-4">
-          <Button variant="ghost" onClick={() => setChatWith(null)} className="mb-4">← Back to Profiles</Button>
+          <Button variant="ghost" onClick={() => setChatWith(null)} className="mb-4">← Back to Hub</Button>
           <div className="glass rounded-2xl overflow-hidden">
             <div className="p-4 border-b border-border flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
@@ -241,12 +231,23 @@ const Networking = () => {
 
   return (
     <div className="min-h-screen pt-24 pb-16">
-      <div className="container max-w-4xl px-4">
-        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-10">
+      <div className="container max-w-5xl px-4">
+        {/* Header */}
+        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
           <h1 className="text-3xl sm:text-5xl font-display font-bold mb-3">
             Networking <span className="text-gradient">Hub</span>
           </h1>
-          <p className="text-muted-foreground text-sm sm:text-base mb-4">Connect with fellow attendees, speakers, and sponsors.</p>
+          <p className="text-muted-foreground text-sm sm:text-base mb-4 max-w-2xl mx-auto">
+            Connect with fellow delegates by fellowship track. Your email and phone are always kept private.
+          </p>
+
+          {/* Privacy badge */}
+          <div className="inline-flex items-center gap-2 glass rounded-full px-4 py-2 text-xs text-muted-foreground mb-6">
+            <Shield className="w-3.5 h-3.5 text-primary" />
+            <span>Emails & phone numbers are <strong className="text-foreground">never shared</strong> publicly</span>
+          </div>
+
+          {/* Social links */}
           <div className="flex justify-center gap-3 flex-wrap">
             <a href="https://whatsapp.com/channel/0029Va52VeNHAdNUsy8IVJ1P" target="_blank" rel="noopener noreferrer">
               <Button variant="outline" size="sm" className="gap-2 border-primary/30 text-primary hover:bg-primary/10">
@@ -254,39 +255,61 @@ const Networking = () => {
               </Button>
             </a>
             <a href="https://www.instagram.com/nextgenerationafrica_?igsh=MWp4MDM2cHJhdW81aA==" target="_blank" rel="noopener noreferrer">
-              <Button variant="outline" size="sm" className="gap-2 border-primary/30 text-primary hover:bg-primary/10">
-                Instagram
-              </Button>
+              <Button variant="outline" size="sm" className="gap-2 border-primary/30 text-primary hover:bg-primary/10">Instagram</Button>
             </a>
             <a href="https://www.facebook.com/nextgenafricacommunity" target="_blank" rel="noopener noreferrer">
-              <Button variant="outline" size="sm" className="gap-2 border-primary/30 text-primary hover:bg-primary/10">
-                Facebook
-              </Button>
+              <Button variant="outline" size="sm" className="gap-2 border-primary/30 text-primary hover:bg-primary/10">Facebook</Button>
             </a>
           </div>
         </motion.div>
 
-        {/* Profile setup/edit */}
-        {(showSetup || !myProfile) && (
+        {/* Track stats */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+          className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
+          <Card className="glass border-border">
+            <CardContent className="p-4 text-center">
+              <Users className="w-5 h-5 text-primary mx-auto mb-1" />
+              <div className="text-2xl font-bold font-display text-foreground">{registrations.length}</div>
+              <div className="text-xs text-muted-foreground">Total Delegates</div>
+            </CardContent>
+          </Card>
+          <Card className="glass border-border">
+            <CardContent className="p-4 text-center">
+              <GraduationCap className="w-5 h-5 text-primary mx-auto mb-1" />
+              <div className="text-2xl font-bold font-display text-foreground">{careerCount}</div>
+              <div className="text-xs text-muted-foreground">Career Track</div>
+            </CardContent>
+          </Card>
+          <Card className="glass border-border col-span-2 sm:col-span-1">
+            <CardContent className="p-4 text-center">
+              <Briefcase className="w-5 h-5 text-primary mx-auto mb-1" />
+              <div className="text-2xl font-bold font-display text-foreground">{businessCount}</div>
+              <div className="text-xs text-muted-foreground">Business Track</div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Profile setup for logged-in users */}
+        {user && (showSetup || !myProfile) && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="glass rounded-2xl p-6 mb-8">
-            <h2 className="text-lg font-display font-bold mb-4">{myProfile ? "Edit Profile" : "Create Your Profile"}</h2>
+            <h2 className="text-lg font-display font-bold mb-4">{myProfile ? "Edit Profile" : "Create Your Networking Profile"}</h2>
             <form onSubmit={saveProfile} className="space-y-4">
               <Input placeholder="Full Name *" value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} required />
-              <Input placeholder="Organization" value={form.organization} onChange={(e) => setForm({ ...form, organization: e.target.value })} />
-              <Textarea placeholder="Short bio..." value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })} rows={3} />
+              <Input placeholder="Organization (optional)" value={form.organization} onChange={(e) => setForm({ ...form, organization: e.target.value })} />
+              <Textarea placeholder="Short bio — what you do, what you're looking for..." value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })} rows={3} />
               <Button type="submit" disabled={saving} className="bg-primary text-primary-foreground">{saving ? "Saving..." : "Save Profile"}</Button>
             </form>
           </motion.div>
         )}
 
-        {myProfile && !showSetup && (
+        {user && myProfile && !showSetup && (
           <div className="flex justify-end mb-4">
             <Button variant="outline" size="sm" onClick={() => setShowSetup(true)}>Edit Profile</Button>
           </div>
         )}
 
         {/* Pending connection requests */}
-        {connections.filter((c) => c.recipient_id === user.id && c.status === "pending").length > 0 && (
+        {user && connections.filter((c) => c.recipient_id === user.id && c.status === "pending").length > 0 && (
           <div className="glass rounded-xl p-4 mb-6">
             <h3 className="text-sm font-semibold mb-3">Pending Requests</h3>
             {connections.filter((c) => c.recipient_id === user.id && c.status === "pending").map((c) => {
@@ -301,55 +324,160 @@ const Networking = () => {
           </div>
         )}
 
-        {/* Search */}
-        <div className="relative max-w-md mx-auto mb-8">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input placeholder="Search by name or organization..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+        {/* Search & Filter */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-6">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input placeholder="Search by name or organization..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+          </div>
+          <div className="flex items-center gap-2">
+            <Filter className="w-4 h-4 text-muted-foreground shrink-0" />
+            {([
+              { value: "all", label: "All" },
+              { value: "career", label: "Career" },
+              { value: "enterprise", label: "Business" },
+            ] as const).map((f) => (
+              <Button
+                key={f.value}
+                size="sm"
+                variant={trackFilter === f.value ? "default" : "outline"}
+                onClick={() => setTrackFilter(f.value)}
+                className={trackFilter === f.value ? "bg-primary text-primary-foreground" : "border-border"}
+              >
+                {f.label}
+              </Button>
+            ))}
+          </div>
         </div>
 
-        {/* Profiles grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.filter((p) => p.user_id !== user.id).map((p) => {
-            const conn = getConnectionStatus(p.user_id);
-            const isConnected = conn?.status === "accepted";
-            const isPending = conn?.status === "pending";
-            return (
-              <Card key={p.id} className="glass border-border">
-                <CardContent className="p-5">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                      <User className="w-5 h-5 text-primary" />
+        {/* Tabs: Networking Profiles vs Attendee Directory */}
+        <Tabs defaultValue="profiles" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-6">
+            <TabsTrigger value="profiles">Networking Profiles ({filtered.length})</TabsTrigger>
+            <TabsTrigger value="directory">Attendee Directory ({directoryAttendees.length})</TabsTrigger>
+          </TabsList>
+
+          {/* Networking Profiles — full interaction */}
+          <TabsContent value="profiles">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filtered.filter((p) => !user || p.user_id !== user.id).map((p) => {
+                const conn = getConnectionStatus(p.user_id);
+                const isConnected = conn?.status === "accepted";
+                const isPending = conn?.status === "pending";
+                const track = getTrackForProfile(p.full_name);
+                const course = getCourseForProfile(p.full_name);
+
+                return (
+                  <Card key={p.id} className="glass border-border hover:border-primary/30 transition-colors">
+                    <CardContent className="p-5">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                          <User className="w-5 h-5 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-sm truncate">{p.full_name}</h3>
+                          {p.organization && <p className="text-xs text-muted-foreground truncate">{p.organization}</p>}
+                        </div>
+                      </div>
+
+                      {/* Track & course badges */}
+                      <div className="flex flex-wrap gap-1.5 mb-3">
+                        {track && (
+                          <Badge variant="outline" className="text-[10px] border-primary/40 text-primary">
+                            {track === "enterprise" ? (
+                              <><Briefcase className="w-3 h-3 mr-1" />Business</>
+                            ) : (
+                              <><GraduationCap className="w-3 h-3 mr-1" />Career</>
+                            )}
+                          </Badge>
+                        )}
+                        {course && (
+                          <Badge variant="secondary" className="text-[10px]">{course}</Badge>
+                        )}
+                      </div>
+
+                      {p.bio && <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{p.bio}</p>}
+
+                      {user ? (
+                        <div className="flex gap-2 items-center">
+                          {isConnected ? (
+                            <>
+                              <Badge className="bg-primary/20 text-primary text-xs">Connected</Badge>
+                              <Button size="sm" variant="outline" onClick={() => setChatWith(p)} className="ml-auto">
+                                <MessageCircle className="w-3 h-3 mr-1" /> Chat
+                              </Button>
+                            </>
+                          ) : isPending ? (
+                            <Badge variant="secondary" className="text-xs">Pending</Badge>
+                          ) : (
+                            <Button size="sm" onClick={() => sendConnection(p.user_id)} className="bg-primary text-primary-foreground">
+                              <UserPlus className="w-3 h-3 mr-1" /> Connect
+                            </Button>
+                          )}
+                        </div>
+                      ) : (
+                        <p className="text-[10px] text-muted-foreground italic">Sign in to connect</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
+              {filtered.filter((p) => !user || p.user_id !== user.id).length === 0 && (
+                <p className="col-span-full text-center text-muted-foreground py-8">No networking profiles found</p>
+              )}
+            </div>
+          </TabsContent>
+
+          {/* Attendee Directory — public, no sensitive data */}
+          <TabsContent value="directory">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {directoryAttendees.map((r) => (
+                <Card key={r.id} className="glass border-border">
+                  <CardContent className="p-5">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center shrink-0">
+                        <User className="w-5 h-5 text-muted-foreground" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-sm truncate">{r.full_name}</h3>
+                        <p className="text-[10px] text-muted-foreground capitalize">{r.current_status.replace("_", " ")}</p>
+                      </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-sm truncate">{p.full_name}</h3>
-                      {p.organization && <p className="text-xs text-muted-foreground truncate">{p.organization}</p>}
+                    <div className="flex flex-wrap gap-1.5">
+                      <Badge variant="outline" className="text-[10px] border-primary/40 text-primary">
+                        {r.fellowship_track === "enterprise" ? (
+                          <><Briefcase className="w-3 h-3 mr-1" />Business</>
+                        ) : (
+                          <><GraduationCap className="w-3 h-3 mr-1" />Career</>
+                        )}
+                      </Badge>
+                      {r.selected_course && (
+                        <Badge variant="secondary" className="text-[10px]">{r.selected_course}</Badge>
+                      )}
                     </div>
-                  </div>
-                  {p.bio && <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{p.bio}</p>}
-                  <div className="flex gap-2">
-                    {isConnected ? (
-                      <>
-                        <Badge className="bg-primary/20 text-primary text-xs">Connected</Badge>
-                        <Button size="sm" variant="outline" onClick={() => setChatWith(p)} className="ml-auto">
-                          <MessageCircle className="w-3 h-3 mr-1" /> Chat
-                        </Button>
-                      </>
-                    ) : isPending ? (
-                      <Badge variant="secondary" className="text-xs">Pending</Badge>
-                    ) : (
-                      <Button size="sm" onClick={() => sendConnection(p.user_id)} className="bg-primary text-primary-foreground">
-                        <UserPlus className="w-3 h-3 mr-1" /> Connect
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-          {filtered.filter((p) => p.user_id !== user.id).length === 0 && (
-            <p className="col-span-full text-center text-muted-foreground py-8">No profiles found</p>
-          )}
-        </div>
+                  </CardContent>
+                </Card>
+              ))}
+              {directoryAttendees.length === 0 && (
+                <p className="col-span-full text-center text-muted-foreground py-8">
+                  {registrations.length === 0 ? "No attendees registered yet" : "All attendees have networking profiles!"}
+                </p>
+              )}
+            </div>
+          </TabsContent>
+        </Tabs>
+
+        {/* Sign-in prompt for unauthenticated users */}
+        {!user && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
+            className="mt-12 text-center glass rounded-2xl p-8">
+            <h2 className="text-lg font-display font-bold mb-2">Want to connect with delegates?</h2>
+            <p className="text-sm text-muted-foreground mb-4">Create a networking profile and start building meaningful connections.</p>
+            <Button onClick={() => toast.info("Please register first at /register, then log in.")} className="bg-primary text-primary-foreground">
+              Sign In to Network
+            </Button>
+          </motion.div>
+        )}
       </div>
     </div>
   );
