@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import FloatingParticles from "./FloatingParticles";
 
-const TARGET_DATE = new Date("2026-06-20T09:00:00+01:00");
+const TARGET_DATE = new Date("2026-06-27T09:00:00+01:00");
 const VIDEO_ID = "FeoZU_jmFqQ";
 // YouTube low-res thumbnail as instant poster (no extra request — served from ytimg CDN)
 const POSTER_URL = `https://i.ytimg.com/vi/${VIDEO_ID}/maxresdefault.jpg`;
