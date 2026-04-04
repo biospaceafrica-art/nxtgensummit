@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { Search, UserCheck, Users, Clock, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import BulkCheckIn from "./BulkCheckIn";
 
 type CheckInRow = {
   id: string;
