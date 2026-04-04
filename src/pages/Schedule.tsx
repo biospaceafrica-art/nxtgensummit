@@ -126,7 +126,7 @@ const Schedule = () => {
             Event <span className="text-gradient">Schedule</span>
           </h1>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 text-muted-foreground text-sm">
-            <span className="flex items-center gap-1"><Clock className="w-4 h-4" /> 20th June, 2026 • 11:00 AM</span>
+            <span className="flex items-center gap-1"><Clock className="w-4 h-4" /> 27th June, 2026 • 11:00 AM</span>
             <span className="flex items-center gap-1"><MapPin className="w-4 h-4" /> The Purple Place, Lokogoma, Abuja</span>
           </div>
         </motion.div>

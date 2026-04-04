@@ -88,7 +88,7 @@ const Badge = () => {
             </div>
 
             <div className="pt-2 space-y-0.5">
-              <p className="text-[10px] text-muted-foreground">📅 June 20, 2026 · 11:00 AM</p>
+              <p className="text-[10px] text-muted-foreground">📅 June 27, 2026 · 11:00 AM</p>
               <p className="text-[10px] text-muted-foreground">📍 The Purple Place, Lokogoma, Abuja</p>
             </div>
           </div>
