@@ -53,7 +53,7 @@ const CountdownBanner = () => {
           </>
         )}
         <button
-          onClick={() => setDismissed(true)}
+          onClick={dismiss}
           className="absolute right-3 top-1/2 -translate-y-1/2 opacity-70 hover:opacity-100 transition-opacity"
           aria-label="Dismiss banner"
         >
