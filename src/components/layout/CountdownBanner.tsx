@@ -23,6 +23,11 @@ const CountdownBanner = () => {
     return () => clearInterval(id);
   }, []);
 
+  const dismiss = () => {
+    setDismissed(true);
+    localStorage.setItem("countdown-dismissed", "true");
+  };
+
   if (dismissed) return null;
 
   return (
