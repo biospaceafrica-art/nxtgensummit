@@ -6,7 +6,7 @@ const TARGET_DATE = new Date("2026-06-27T09:00:00+01:00");
 
 const CountdownBanner = () => {
   const [days, setDays] = useState(0);
-  const [dismissed, setDismissed] = useState(false);
+  const [dismissed, setDismissed] = useState(() => localStorage.getItem("countdown-dismissed") === "true");
   const [isLive, setIsLive] = useState(false);
 
   useEffect(() => {
@@ -22,6 +22,11 @@ const CountdownBanner = () => {
     const id = setInterval(tick, 60000);
     return () => clearInterval(id);
   }, []);
+
+  const dismiss = () => {
+    setDismissed(true);
+    localStorage.setItem("countdown-dismissed", "true");
+  };
 
   if (dismissed) return null;
 
@@ -48,7 +53,7 @@ const CountdownBanner = () => {
           </>
         )}
         <button
-          onClick={() => setDismissed(true)}
+          onClick={dismiss}
           className="absolute right-3 top-1/2 -translate-y-1/2 opacity-70 hover:opacity-100 transition-opacity"
           aria-label="Dismiss banner"
         >
