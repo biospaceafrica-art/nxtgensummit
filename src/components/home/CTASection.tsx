@@ -15,7 +15,7 @@ const CTASection = () => (
           Ready to <span className="text-gradient">Ignite</span> Your Potential?
         </h2>
         <p className="text-muted-foreground mb-8 max-w-lg mx-auto">
-          Secure your spot at Africa's premier faith-driven leadership summit. Secure your spot at Africa's premier faith-driven leadership summit. June 27, 2026 • The Purple Place, Lokogoma, Abuja. • The Purple Place, Lokogoma, Abuja.
+          Secure your spot at Africa's premier faith-driven leadership summit. June 27, 2026 • The Purple Place, Lokogoma, Abuja.
         </p>
         <div className="flex flex-col sm:flex-row justify-center gap-4">
           <Link to="/register">
