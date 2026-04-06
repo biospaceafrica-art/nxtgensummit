@@ -6,7 +6,7 @@ const TARGET_DATE = new Date("2026-06-27T09:00:00+01:00");
 
 const CountdownBanner = () => {
   const [days, setDays] = useState(0);
-  const [dismissed, setDismissed] = useState(false);
+  const [dismissed, setDismissed] = useState(() => localStorage.getItem("countdown-dismissed") === "true");
   const [isLive, setIsLive] = useState(false);
 
   useEffect(() => {
