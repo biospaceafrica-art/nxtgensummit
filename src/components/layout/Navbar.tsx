@@ -20,7 +20,7 @@ const Navbar = () => {
   const location = useLocation();
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 glass">
+    <nav className="fixed top-9 left-0 right-0 z-50 glass">
       <div className="container flex items-center justify-between h-16 md:h-20">
         <Link to="/" className="flex items-center gap-2">
           <img src={nextgenLogo} alt="Next Generation Summit logo" className="h-10 sm:h-12 w-auto" />

@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
+import CountdownBanner from "@/components/layout/CountdownBanner";
 import Footer from "@/components/layout/Footer";
 import Index from "./pages/Index";
 import Register from "./pages/Register";
@@ -30,6 +31,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <CountdownBanner />
         <Navbar />
         <main>
           <Routes>
