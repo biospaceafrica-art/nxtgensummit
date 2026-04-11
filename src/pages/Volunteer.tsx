@@ -52,9 +52,13 @@ const Volunteer = () => {
           <CheckCircle className="w-16 h-16 text-primary mx-auto mb-4" />
           <h2 className="text-2xl font-display font-bold mb-2">Application Received!</h2>
           <p className="text-muted-foreground mb-4">
+          <p className="text-muted-foreground mb-4">
             Thank you for volunteering! We'll be in touch soon. Join our WhatsApp group and follow us on Instagram and Facebook for updates.
           </p>
           <div className="flex flex-col gap-2">
+            <a href="https://chat.whatsapp.com/CAVi4oKBoyv4b3vo92AKkl?mode=gi_t" target="_blank" rel="noopener noreferrer">
+              <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold">🟢 Join Volunteer WhatsApp Group</Button>
+            </a>
             <a href="https://forms.gle/Hjzyizt5YmeoWxTK6" target="_blank" rel="noopener noreferrer">
               <Button variant="outline" className="w-full">Also fill the Google Form</Button>
             </a>
