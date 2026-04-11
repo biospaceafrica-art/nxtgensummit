@@ -55,6 +55,9 @@ const Volunteer = () => {
             Thank you for volunteering! We'll be in touch soon. Join our WhatsApp group and follow us on Instagram and Facebook for updates.
           </p>
           <div className="flex flex-col gap-2">
+            <a href="https://chat.whatsapp.com/CAVi4oKBoyv4b3vo92AKkl?mode=gi_t" target="_blank" rel="noopener noreferrer">
+              <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold">🟢 Join Volunteer WhatsApp Group</Button>
+            </a>
             <a href="https://forms.gle/Hjzyizt5YmeoWxTK6" target="_blank" rel="noopener noreferrer">
               <Button variant="outline" className="w-full">Also fill the Google Form</Button>
             </a>
@@ -72,7 +75,7 @@ const Volunteer = () => {
             Call for <span className="text-gradient">Volunteers</span>
           </h1>
           <p className="text-muted-foreground max-w-2xl mx-auto text-sm sm:text-base">
-            The Next Generation Summit 2026 is coming to Abuja on 27th June — and we're inviting YOU to be part of something bigger than just an event. — and we're inviting YOU to be part of something bigger than just an event.
+            The Next Generation Summit 2026 is coming to Abuja on 27th June — and we're inviting YOU to be part of something bigger than just an event.
           </p>
         </motion.div>
 
