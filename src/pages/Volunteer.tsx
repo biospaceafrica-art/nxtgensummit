@@ -52,7 +52,6 @@ const Volunteer = () => {
           <CheckCircle className="w-16 h-16 text-primary mx-auto mb-4" />
           <h2 className="text-2xl font-display font-bold mb-2">Application Received!</h2>
           <p className="text-muted-foreground mb-4">
-          <p className="text-muted-foreground mb-4">
             Thank you for volunteering! We'll be in touch soon. Join our WhatsApp group and follow us on Instagram and Facebook for updates.
           </p>
           <div className="flex flex-col gap-2">
