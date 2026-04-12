@@ -42,6 +42,10 @@ const Volunteer = () => {
     } else {
       setSubmitted(true);
       toast.success("Application submitted successfully!");
+      // Notify admins in background
+      supabase.functions.invoke("notify-volunteer-application", {
+        body: { full_name: form.full_name, email: form.email, phone: form.phone, position: form.position, experience: form.experience, why_volunteer: form.why_volunteer },
+      }).catch(() => {});
     }
   };
 
