@@ -106,6 +106,15 @@ const Volunteer = () => {
           ))}
         </motion.div>
 
+        {/* WhatsApp Community */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.22 }} className="glass rounded-2xl p-6 sm:p-8 mb-10 text-center">
+          <h2 className="text-xl font-display font-bold mb-2">Join Our Volunteer Community</h2>
+          <p className="text-sm text-muted-foreground mb-4">Connect with fellow volunteers, get updates, and coordinate before the event.</p>
+          <a href="https://chat.whatsapp.com/CAVi4oKBoyv4b3vo92AKkl?mode=gi_t" target="_blank" rel="noopener noreferrer">
+            <Button variant="outline" className="font-semibold">🟢 Join Volunteer WhatsApp Group</Button>
+          </a>
+        </motion.div>
+
         {/* Form */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
           <form onSubmit={handleSubmit} className="glass rounded-2xl p-6 sm:p-8 space-y-5">
