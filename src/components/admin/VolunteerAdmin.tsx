@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Users, Search, Check, X, Clock } from "lucide-react";
+import { Users, Search, Check, X, Clock, Download } from "lucide-react";
 
 type VolunteerApp = {
   id: string;
@@ -47,6 +47,7 @@ const VolunteerAdmin = () => {
   useEffect(() => { load(); }, []);
 
   const updateStatus = async (id: string, status: "approved" | "rejected" | "pending") => {
+    const volunteer = volunteers.find((v) => v.id === id);
     const { error } = await supabase
       .from("volunteer_applications")
       .update({ status })
@@ -55,8 +56,46 @@ const VolunteerAdmin = () => {
       toast.error("Failed to update status");
       return;
     }
-    toast.success(`Application ${status}`);
     setVolunteers((prev) => prev.map((v) => (v.id === id ? { ...v, status } : v)));
+
+    if (volunteer && (status === "approved" || status === "rejected")) {
+      supabase.functions.invoke("notify-volunteer-status", {
+        body: {
+          full_name: volunteer.full_name,
+          email: volunteer.email,
+          position: positionLabels[volunteer.position] || volunteer.position,
+          status,
+        },
+      }).then(({ error: fnErr }) => {
+        if (fnErr) toast.warning(`Status updated, but email notification failed`);
+        else toast.success(`Application ${status} & email sent`);
+      });
+    } else {
+      toast.success(`Application ${status}`);
+    }
+  };
+
+  const exportCSV = () => {
+    const headers = ["Name", "Email", "Phone", "Position", "Status", "Experience", "Motivation", "Applied"];
+    const rows = filtered.map((v) => [
+      v.full_name,
+      v.email,
+      v.phone || "",
+      positionLabels[v.position] || v.position,
+      v.status || "pending",
+      (v.experience || "").replace(/"/g, '""'),
+      (v.why_volunteer || "").replace(/"/g, '""'),
+      new Date(v.created_at).toISOString(),
+    ]);
+    const csv = [headers, ...rows].map((r) => r.map((c) => `"${c}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `volunteers-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    toast.success(`Exported ${filtered.length} applications`);
   };
 
   const filtered = volunteers.filter((v) => {
@@ -118,7 +157,12 @@ const VolunteerAdmin = () => {
 
       <Card className="glass border-border">
         <CardHeader>
-          <CardTitle className="text-lg">Volunteer Applications ({filtered.length})</CardTitle>
+          <div className="flex items-center justify-between gap-3">
+            <CardTitle className="text-lg">Volunteer Applications ({filtered.length})</CardTitle>
+            <Button size="sm" variant="outline" onClick={exportCSV} className="gap-1">
+              <Download className="w-4 h-4" /> Export CSV
+            </Button>
+          </div>
           <div className="flex flex-col sm:flex-row gap-3 mt-3">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
