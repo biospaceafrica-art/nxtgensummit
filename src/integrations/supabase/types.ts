@@ -395,6 +395,7 @@ export type Database = {
           id: string
           phone: string | null
           position: string
+          status: string
           why_volunteer: string | null
         }
         Insert: {
@@ -405,6 +406,7 @@ export type Database = {
           id?: string
           phone?: string | null
           position: string
+          status?: string
           why_volunteer?: string | null
         }
         Update: {
@@ -415,6 +417,7 @@ export type Database = {
           id?: string
           phone?: string | null
           position?: string
+          status?: string
           why_volunteer?: string | null
         }
         Relationships: []

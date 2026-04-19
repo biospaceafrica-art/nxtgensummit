@@ -1,8 +1,12 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { Users } from "lucide-react";
+import { toast } from "sonner";
+import { Users, Search, Check, X, Clock } from "lucide-react";
 
 type VolunteerApp = {
   id: string;
@@ -12,6 +16,7 @@ type VolunteerApp = {
   position: string;
   experience: string | null;
   why_volunteer: string | null;
+  status: string;
   created_at: string;
 };
 
@@ -24,16 +29,59 @@ const positionLabels: Record<string, string> = {
 
 const VolunteerAdmin = () => {
   const [volunteers, setVolunteers] = useState<VolunteerApp[]>([]);
+  const [search, setSearch] = useState("");
+  const [positionFilter, setPositionFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [expanded, setExpanded] = useState<string | null>(null);
 
-  useEffect(() => {
-    supabase.from("volunteer_applications").select("*").order("created_at", { ascending: false })
-      .then(({ data }) => { if (data) setVolunteers(data as VolunteerApp[]); });
-  }, []);
+  const load = () => {
+    supabase
+      .from("volunteer_applications")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .then(({ data }) => {
+        if (data) setVolunteers(data as VolunteerApp[]);
+      });
+  };
 
-  const byPosition = volunteers.reduce<Record<string, number>>((acc, v) => {
-    acc[v.position] = (acc[v.position] || 0) + 1;
-    return acc;
-  }, {});
+  useEffect(() => { load(); }, []);
+
+  const updateStatus = async (id: string, status: "approved" | "rejected" | "pending") => {
+    const { error } = await supabase
+      .from("volunteer_applications")
+      .update({ status })
+      .eq("id", id);
+    if (error) {
+      toast.error("Failed to update status");
+      return;
+    }
+    toast.success(`Application ${status}`);
+    setVolunteers((prev) => prev.map((v) => (v.id === id ? { ...v, status } : v)));
+  };
+
+  const filtered = volunteers.filter((v) => {
+    const s = search.toLowerCase();
+    const matchesSearch = !s ||
+      v.full_name.toLowerCase().includes(s) ||
+      v.email.toLowerCase().includes(s);
+    const matchesPosition = positionFilter === "all" || v.position === positionFilter;
+    const matchesStatus = statusFilter === "all" || (v.status || "pending") === statusFilter;
+    return matchesSearch && matchesPosition && matchesStatus;
+  });
+
+  const counts = {
+    total: volunteers.length,
+    pending: volunteers.filter((v) => (v.status || "pending") === "pending").length,
+    approved: volunteers.filter((v) => v.status === "approved").length,
+    rejected: volunteers.filter((v) => v.status === "rejected").length,
+  };
+
+  const statusBadge = (status: string) => {
+    const s = status || "pending";
+    if (s === "approved") return <Badge className="bg-primary/20 text-primary border-primary/40 text-xs">Approved</Badge>;
+    if (s === "rejected") return <Badge variant="outline" className="text-xs border-destructive/40 text-destructive">Rejected</Badge>;
+    return <Badge variant="secondary" className="text-xs">Pending</Badge>;
+  };
 
   return (
     <div className="space-y-6">
@@ -41,22 +89,66 @@ const VolunteerAdmin = () => {
         <Card className="glass border-border">
           <CardContent className="p-4 text-center">
             <Users className="w-6 h-6 text-primary mx-auto mb-2" />
-            <div className="text-2xl font-display font-bold">{volunteers.length}</div>
+            <div className="text-2xl font-display font-bold">{counts.total}</div>
             <p className="text-xs text-muted-foreground">Total Volunteers</p>
           </CardContent>
         </Card>
-        {Object.entries(byPosition).map(([pos, count]) => (
-          <Card key={pos} className="glass border-border">
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-display font-bold">{count}</div>
-              <p className="text-xs text-muted-foreground">{positionLabels[pos] || pos}</p>
-            </CardContent>
-          </Card>
-        ))}
+        <Card className="glass border-border">
+          <CardContent className="p-4 text-center">
+            <Clock className="w-6 h-6 text-muted-foreground mx-auto mb-2" />
+            <div className="text-2xl font-display font-bold">{counts.pending}</div>
+            <p className="text-xs text-muted-foreground">Pending</p>
+          </CardContent>
+        </Card>
+        <Card className="glass border-border">
+          <CardContent className="p-4 text-center">
+            <Check className="w-6 h-6 text-primary mx-auto mb-2" />
+            <div className="text-2xl font-display font-bold">{counts.approved}</div>
+            <p className="text-xs text-muted-foreground">Approved</p>
+          </CardContent>
+        </Card>
+        <Card className="glass border-border">
+          <CardContent className="p-4 text-center">
+            <X className="w-6 h-6 text-destructive mx-auto mb-2" />
+            <div className="text-2xl font-display font-bold">{counts.rejected}</div>
+            <p className="text-xs text-muted-foreground">Rejected</p>
+          </CardContent>
+        </Card>
       </div>
 
       <Card className="glass border-border">
-        <CardHeader><CardTitle className="text-lg">Volunteer Applications ({volunteers.length})</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle className="text-lg">Volunteer Applications ({filtered.length})</CardTitle>
+          <div className="flex flex-col sm:flex-row gap-3 mt-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search name or email..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            <Select value={positionFilter} onValueChange={setPositionFilter}>
+              <SelectTrigger className="w-full sm:w-[200px]"><SelectValue placeholder="Position" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Positions</SelectItem>
+                {Object.entries(positionLabels).map(([v, l]) => (
+                  <SelectItem key={v} value={v}>{l}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full sm:w-[160px]"><SelectValue placeholder="Status" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="approved">Approved</SelectItem>
+                <SelectItem value="rejected">Rejected</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -65,24 +157,62 @@ const VolunteerAdmin = () => {
                   <th className="text-left py-3 px-2">Name</th>
                   <th className="text-left py-3 px-2 hidden sm:table-cell">Email</th>
                   <th className="text-left py-3 px-2">Position</th>
-                  <th className="text-left py-3 px-2 hidden md:table-cell">Experience</th>
-                  <th className="text-left py-3 px-2 hidden lg:table-cell">Date</th>
+                  <th className="text-left py-3 px-2">Status</th>
+                  <th className="text-left py-3 px-2">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {volunteers.map((v) => (
-                  <tr key={v.id} className="border-b border-border/50">
-                    <td className="py-3 px-2 font-medium">{v.full_name}</td>
-                    <td className="py-3 px-2 hidden sm:table-cell text-muted-foreground">{v.email}</td>
-                    <td className="py-3 px-2">
-                      <Badge variant="outline" className="text-xs">{positionLabels[v.position] || v.position}</Badge>
-                    </td>
-                    <td className="py-3 px-2 hidden md:table-cell text-xs text-muted-foreground truncate max-w-[200px]">{v.experience || "—"}</td>
-                    <td className="py-3 px-2 hidden lg:table-cell text-muted-foreground text-xs">{new Date(v.created_at).toLocaleDateString()}</td>
-                  </tr>
+                {filtered.map((v) => (
+                  <React.Fragment key={v.id}>
+                    <tr
+                      className="border-b border-border/50 cursor-pointer hover:bg-secondary/30"
+                      onClick={() => setExpanded(expanded === v.id ? null : v.id)}
+                    >
+                      <td className="py-3 px-2 font-medium">{v.full_name}</td>
+                      <td className="py-3 px-2 hidden sm:table-cell text-muted-foreground">{v.email}</td>
+                      <td className="py-3 px-2">
+                        <Badge variant="outline" className="text-xs">{positionLabels[v.position] || v.position}</Badge>
+                      </td>
+                      <td className="py-3 px-2">{statusBadge(v.status)}</td>
+                      <td className="py-3 px-2" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex gap-1">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 px-2 border-primary/40 text-primary hover:bg-primary/10"
+                            onClick={() => updateStatus(v.id, "approved")}
+                            disabled={v.status === "approved"}
+                          >
+                            <Check className="w-3 h-3" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 px-2 border-destructive/40 text-destructive hover:bg-destructive/10"
+                            onClick={() => updateStatus(v.id, "rejected")}
+                            disabled={v.status === "rejected"}
+                          >
+                            <X className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                    {expanded === v.id && (
+                      <tr className="bg-secondary/20 border-b border-border/50">
+                        <td colSpan={5} className="py-4 px-4">
+                          <div className="grid sm:grid-cols-2 gap-3 text-xs">
+                            <div><span className="text-muted-foreground">Phone:</span> {v.phone || "—"}</div>
+                            <div><span className="text-muted-foreground">Applied:</span> {new Date(v.created_at).toLocaleString()}</div>
+                            <div className="sm:col-span-2"><span className="text-muted-foreground">Experience:</span> {v.experience || "—"}</div>
+                            <div className="sm:col-span-2"><span className="text-muted-foreground">Motivation:</span> {v.why_volunteer || "—"}</div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
                 ))}
-                {volunteers.length === 0 && (
-                  <tr><td colSpan={5} className="text-center py-8 text-muted-foreground">No volunteer applications yet</td></tr>
+                {filtered.length === 0 && (
+                  <tr><td colSpan={5} className="text-center py-8 text-muted-foreground">No volunteer applications found</td></tr>
                 )}
               </tbody>
             </table>
