@@ -304,7 +304,7 @@ const VolunteerAdmin = () => {
                     </tr>
                     {expanded === v.id && (
                       <tr className="bg-secondary/20 border-b border-border/50">
-                        <td colSpan={5} className="py-4 px-4">
+                        <td colSpan={6} className="py-4 px-4">
                           <div className="grid sm:grid-cols-2 gap-3 text-xs">
                             <div><span className="text-muted-foreground">Phone:</span> {v.phone || "—"}</div>
                             <div><span className="text-muted-foreground">Applied:</span> {new Date(v.created_at).toLocaleString()}</div>
@@ -317,7 +317,7 @@ const VolunteerAdmin = () => {
                   </React.Fragment>
                 ))}
                 {filtered.length === 0 && (
-                  <tr><td colSpan={5} className="text-center py-8 text-muted-foreground">No volunteer applications found</td></tr>
+                  <tr><td colSpan={6} className="text-center py-8 text-muted-foreground">No volunteer applications found</td></tr>
                 )}
               </tbody>
             </table>
