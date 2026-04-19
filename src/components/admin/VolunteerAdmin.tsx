@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -33,6 +34,42 @@ const VolunteerAdmin = () => {
   const [positionFilter, setPositionFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+
+  const toggleOne = (id: string) =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
+  const bulkUpdate = async (status: "approved" | "rejected") => {
+    const ids = Array.from(selected);
+    if (ids.length === 0) return;
+    const targets = volunteers.filter((v) => ids.includes(v.id));
+    const { error } = await supabase
+      .from("volunteer_applications")
+      .update({ status })
+      .in("id", ids);
+    if (error) {
+      toast.error("Bulk update failed");
+      return;
+    }
+    setVolunteers((prev) => prev.map((v) => (ids.includes(v.id) ? { ...v, status } : v)));
+    setSelected(new Set());
+    toast.success(`${ids.length} application(s) ${status}`);
+    targets.forEach((v) => {
+      supabase.functions.invoke("notify-volunteer-status", {
+        body: {
+          full_name: v.full_name,
+          email: v.email,
+          position: positionLabels[v.position] || v.position,
+          status,
+        },
+      });
+    });
+  };
 
   const load = () => {
     supabase
@@ -192,12 +229,33 @@ const VolunteerAdmin = () => {
               </SelectContent>
             </Select>
           </div>
+          {selected.size > 0 && (
+            <div className="flex items-center gap-3 mt-3 p-3 rounded-md bg-secondary/40 border border-border">
+              <span className="text-sm font-medium">{selected.size} selected</span>
+              <Button size="sm" variant="outline" onClick={() => bulkUpdate("approved")} className="border-primary/40 text-primary hover:bg-primary/10 gap-1">
+                <Check className="w-3 h-3" /> Approve all
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => bulkUpdate("rejected")} className="border-destructive/40 text-destructive hover:bg-destructive/10 gap-1">
+                <X className="w-3 h-3" /> Reject all
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())}>Clear</Button>
+            </div>
+          )}
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border text-muted-foreground">
+                  <th className="py-3 px-2 w-8">
+                    <Checkbox
+                      checked={filtered.length > 0 && filtered.every((v) => selected.has(v.id))}
+                      onCheckedChange={(c) => {
+                        if (c) setSelected(new Set(filtered.map((v) => v.id)));
+                        else setSelected(new Set());
+                      }}
+                    />
+                  </th>
                   <th className="text-left py-3 px-2">Name</th>
                   <th className="text-left py-3 px-2 hidden sm:table-cell">Email</th>
                   <th className="text-left py-3 px-2">Position</th>
@@ -212,6 +270,9 @@ const VolunteerAdmin = () => {
                       className="border-b border-border/50 cursor-pointer hover:bg-secondary/30"
                       onClick={() => setExpanded(expanded === v.id ? null : v.id)}
                     >
+                      <td className="py-3 px-2" onClick={(e) => e.stopPropagation()}>
+                        <Checkbox checked={selected.has(v.id)} onCheckedChange={() => toggleOne(v.id)} />
+                      </td>
                       <td className="py-3 px-2 font-medium">{v.full_name}</td>
                       <td className="py-3 px-2 hidden sm:table-cell text-muted-foreground">{v.email}</td>
                       <td className="py-3 px-2">
@@ -243,7 +304,7 @@ const VolunteerAdmin = () => {
                     </tr>
                     {expanded === v.id && (
                       <tr className="bg-secondary/20 border-b border-border/50">
-                        <td colSpan={5} className="py-4 px-4">
+                        <td colSpan={6} className="py-4 px-4">
                           <div className="grid sm:grid-cols-2 gap-3 text-xs">
                             <div><span className="text-muted-foreground">Phone:</span> {v.phone || "—"}</div>
                             <div><span className="text-muted-foreground">Applied:</span> {new Date(v.created_at).toLocaleString()}</div>
@@ -256,7 +317,7 @@ const VolunteerAdmin = () => {
                   </React.Fragment>
                 ))}
                 {filtered.length === 0 && (
-                  <tr><td colSpan={5} className="text-center py-8 text-muted-foreground">No volunteer applications found</td></tr>
+                  <tr><td colSpan={6} className="text-center py-8 text-muted-foreground">No volunteer applications found</td></tr>
                 )}
               </tbody>
             </table>
