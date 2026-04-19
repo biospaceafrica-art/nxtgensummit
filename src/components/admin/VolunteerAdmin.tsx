@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -33,6 +34,42 @@ const VolunteerAdmin = () => {
   const [positionFilter, setPositionFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+
+  const toggleOne = (id: string) =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
+  const bulkUpdate = async (status: "approved" | "rejected") => {
+    const ids = Array.from(selected);
+    if (ids.length === 0) return;
+    const targets = volunteers.filter((v) => ids.includes(v.id));
+    const { error } = await supabase
+      .from("volunteer_applications")
+      .update({ status })
+      .in("id", ids);
+    if (error) {
+      toast.error("Bulk update failed");
+      return;
+    }
+    setVolunteers((prev) => prev.map((v) => (ids.includes(v.id) ? { ...v, status } : v)));
+    setSelected(new Set());
+    toast.success(`${ids.length} application(s) ${status}`);
+    targets.forEach((v) => {
+      supabase.functions.invoke("notify-volunteer-status", {
+        body: {
+          full_name: v.full_name,
+          email: v.email,
+          position: positionLabels[v.position] || v.position,
+          status,
+        },
+      });
+    });
+  };
 
   const load = () => {
     supabase
