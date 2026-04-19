@@ -229,12 +229,33 @@ const VolunteerAdmin = () => {
               </SelectContent>
             </Select>
           </div>
+          {selected.size > 0 && (
+            <div className="flex items-center gap-3 mt-3 p-3 rounded-md bg-secondary/40 border border-border">
+              <span className="text-sm font-medium">{selected.size} selected</span>
+              <Button size="sm" variant="outline" onClick={() => bulkUpdate("approved")} className="border-primary/40 text-primary hover:bg-primary/10 gap-1">
+                <Check className="w-3 h-3" /> Approve all
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => bulkUpdate("rejected")} className="border-destructive/40 text-destructive hover:bg-destructive/10 gap-1">
+                <X className="w-3 h-3" /> Reject all
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())}>Clear</Button>
+            </div>
+          )}
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border text-muted-foreground">
+                  <th className="py-3 px-2 w-8">
+                    <Checkbox
+                      checked={filtered.length > 0 && filtered.every((v) => selected.has(v.id))}
+                      onCheckedChange={(c) => {
+                        if (c) setSelected(new Set(filtered.map((v) => v.id)));
+                        else setSelected(new Set());
+                      }}
+                    />
+                  </th>
                   <th className="text-left py-3 px-2">Name</th>
                   <th className="text-left py-3 px-2 hidden sm:table-cell">Email</th>
                   <th className="text-left py-3 px-2">Position</th>
@@ -249,6 +270,9 @@ const VolunteerAdmin = () => {
                       className="border-b border-border/50 cursor-pointer hover:bg-secondary/30"
                       onClick={() => setExpanded(expanded === v.id ? null : v.id)}
                     >
+                      <td className="py-3 px-2" onClick={(e) => e.stopPropagation()}>
+                        <Checkbox checked={selected.has(v.id)} onCheckedChange={() => toggleOne(v.id)} />
+                      </td>
                       <td className="py-3 px-2 font-medium">{v.full_name}</td>
                       <td className="py-3 px-2 hidden sm:table-cell text-muted-foreground">{v.email}</td>
                       <td className="py-3 px-2">
