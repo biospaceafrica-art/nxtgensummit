@@ -163,9 +163,8 @@ const VolunteerAdmin = () => {
               </thead>
               <tbody>
                 {filtered.map((v) => (
-                  <>
+                  <React.Fragment key={v.id}>
                     <tr
-                      key={v.id}
                       className="border-b border-border/50 cursor-pointer hover:bg-secondary/30"
                       onClick={() => setExpanded(expanded === v.id ? null : v.id)}
                     >
