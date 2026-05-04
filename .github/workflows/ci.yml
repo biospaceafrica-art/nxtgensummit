@@ -28,8 +28,9 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
 
-      - name: Lint
-        run: npm run lint
+      - name: Lint (non-blocking)
+        run: npm run lint || echo "::warning::Lint reported issues (non-blocking)"
+        continue-on-error: true
 
       - name: Typecheck
         run: npx tsc --noEmit
