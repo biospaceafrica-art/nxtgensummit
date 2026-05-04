@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,12 @@ const AdminLogin = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [changingPassword, setChangingPassword] = useState(false);
   const navigate = useNavigate();
+
+  // Prefetch admin dashboard chunk while user is on the login page
+  // so the redirect after a successful login is instant.
+  useEffect(() => {
+    import("./Admin");
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
