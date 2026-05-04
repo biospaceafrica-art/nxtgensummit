@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -7,21 +8,28 @@ import Navbar from "@/components/layout/Navbar";
 import CountdownBanner from "@/components/layout/CountdownBanner";
 import Footer from "@/components/layout/Footer";
 import Index from "./pages/Index";
-import Register from "./pages/Register";
-import Fellowship from "./pages/Fellowship";
-import Speakers from "./pages/Speakers";
-import Schedule from "./pages/Schedule";
-import Scholarship from "./pages/Scholarship";
-import PlantASeed from "./pages/PlantASeed";
-import Feedback from "./pages/Feedback";
-import Admin from "./pages/Admin";
-import AdminLogin from "./pages/AdminLogin";
-import Gallery from "./pages/Gallery";
-import Volunteer from "./pages/Volunteer";
-import Networking from "./pages/Networking";
-import Badge from "./pages/Badge";
-import CheckIn from "./pages/CheckIn";
 import NotFound from "./pages/NotFound";
+
+const Register = lazy(() => import("./pages/Register"));
+const Fellowship = lazy(() => import("./pages/Fellowship"));
+const Speakers = lazy(() => import("./pages/Speakers"));
+const Schedule = lazy(() => import("./pages/Schedule"));
+const Scholarship = lazy(() => import("./pages/Scholarship"));
+const PlantASeed = lazy(() => import("./pages/PlantASeed"));
+const Feedback = lazy(() => import("./pages/Feedback"));
+const Admin = lazy(() => import("./pages/Admin"));
+const AdminLogin = lazy(() => import("./pages/AdminLogin"));
+const Gallery = lazy(() => import("./pages/Gallery"));
+const Volunteer = lazy(() => import("./pages/Volunteer"));
+const Networking = lazy(() => import("./pages/Networking"));
+const Badge = lazy(() => import("./pages/Badge"));
+const CheckIn = lazy(() => import("./pages/CheckIn"));
+
+const RouteFallback = () => (
+  <div className="min-h-[60vh] flex items-center justify-center">
+    <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+  </div>
+);
 
 const queryClient = new QueryClient();
 
@@ -34,6 +42,7 @@ const App = () => (
         <CountdownBanner />
         <Navbar />
         <main>
+          <Suspense fallback={<RouteFallback />}>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/register" element={<Register />} />
