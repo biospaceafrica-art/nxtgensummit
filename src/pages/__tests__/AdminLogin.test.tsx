@@ -15,13 +15,13 @@ const invoke = vi.fn();
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
     auth: {
-      signInWithPassword: (...a: unknown[]) => signInWithPassword(...a),
-      getSession: (...a: unknown[]) => getSession(...a),
-      onAuthStateChange: (...a: unknown[]) => onAuthStateChange(...a),
-      signOut: (...a: unknown[]) => signOut(...a),
+      signInWithPassword: (...a: unknown[]) => signInWithPassword(...(a as [])),
+      getSession: (...a: unknown[]) => getSession(...(a as [])),
+      onAuthStateChange: (...a: unknown[]) => onAuthStateChange(...(a as [])),
+      signOut: (...a: unknown[]) => signOut(...(a as [])),
       updateUser: vi.fn(),
     },
-    functions: { invoke: (...a: unknown[]) => invoke(...a) },
+    functions: { invoke: (...a: unknown[]) => invoke(...(a as [])) },
     from: () => ({
       select: () => ({ order: () => Promise.resolve({ data: [] }) }),
     }),
