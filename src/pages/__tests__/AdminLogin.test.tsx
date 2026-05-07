@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import { Suspense, lazy } from "react";
 
@@ -58,6 +58,14 @@ const renderApp = (initialPath: string) =>
             </Suspense>
           }
         />
+        <Route
+          path="/admin/*"
+          element={
+            <Suspense fallback={<Fallback />}>
+              <Admin />
+            </Suspense>
+          }
+        />
       </Routes>
     </MemoryRouter>,
   );
@@ -79,11 +87,31 @@ describe("Admin auth flow (e2e)", () => {
 
     renderApp("/admin");
 
-    // The Admin page mounts, sees no session, and pushes to /admin/login,
-    // so the login heading should eventually appear.
-    expect(await screen.findByRole("heading", { name: /admin login/i }, { timeout: 4000 })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("heading", { name: /admin login/i }, { timeout: 4000 }),
+    ).toBeInTheDocument();
     expect(getSession).toHaveBeenCalled();
   });
+
+  // Parameterised: every /admin/* sub-path must redirect when unauthenticated.
+  const subPaths = [
+    "/admin/volunteers",
+    "/admin/registrations",
+    "/admin/analytics",
+    "/admin/check-ins",
+    "/admin/feedback",
+    "/admin/anything-else",
+  ];
+  it.each(subPaths)(
+    "redirects unauthenticated users from %s to /admin/login",
+    async (path) => {
+      getSession.mockResolvedValue({ data: { session: null } });
+      renderApp(path);
+      expect(
+        await screen.findByRole("heading", { name: /admin login/i }, { timeout: 4000 }),
+      ).toBeInTheDocument();
+    },
+  );
 
   it("renders the admin dashboard when an authorized session exists", async () => {
     const session = {
@@ -95,13 +123,51 @@ describe("Admin auth flow (e2e)", () => {
 
     renderApp("/admin");
 
-    // Admin.tsx renders the "Admin Dashboard" header once auth resolves.
-    await waitFor(() => {
-      expect(screen.queryByRole("heading", { name: /admin login/i })).not.toBeInTheDocument();
-    }, { timeout: 4000 });
+    await waitFor(
+      () => {
+        expect(screen.queryByRole("heading", { name: /admin login/i })).not.toBeInTheDocument();
+      },
+      { timeout: 4000 },
+    );
     expect(invoke).toHaveBeenCalledWith(
       "check-admin",
       expect.objectContaining({ headers: expect.any(Object) }),
     );
+  });
+
+  it("logging out from /admin signs out and redirects to /admin/login", async () => {
+    const session = {
+      user: { id: "u1", email: "admin@example.com" },
+      access_token: "token",
+    };
+    // First call: authorized — render dashboard.
+    getSession.mockResolvedValueOnce({ data: { session } });
+    invoke.mockResolvedValue({ data: { isAdmin: true } });
+    signOut.mockResolvedValue({ error: null });
+
+    renderApp("/admin");
+
+    // Wait for the dashboard to render (logout button present).
+    const logoutBtn = await screen.findByRole(
+      "button",
+      { name: /log\s*out|sign\s*out|logout/i },
+      { timeout: 4000 },
+    );
+
+    fireEvent.click(logoutBtn);
+
+    await waitFor(() => expect(signOut).toHaveBeenCalled());
+    // After signOut, Admin's navigate("/admin/login") fires — login heading appears.
+    expect(
+      await screen.findByRole("heading", { name: /admin login/i }, { timeout: 4000 }),
+    ).toBeInTheDocument();
+  });
+
+  it("after logout, revisiting an /admin/* sub-path still redirects to login", async () => {
+    getSession.mockResolvedValue({ data: { session: null } });
+    renderApp("/admin/volunteers");
+    expect(
+      await screen.findByRole("heading", { name: /admin login/i }, { timeout: 4000 }),
+    ).toBeInTheDocument();
   });
 });
