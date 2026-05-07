@@ -13,8 +13,8 @@
  * Each failure prints chunk name, observed size, budget, and overage so CI logs
  * make the regression obvious.
  */
-import { readdirSync, statSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import { readdirSync, statSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { join, dirname } from "node:path";
 
 const DIST = "dist/assets";
 const INDEX_HTML = "dist/index.html";
