@@ -164,6 +164,71 @@ if (adminFile) {
   fail("Admin chunk not found — admin dashboard must be code-split.");
 }
 
+// --- Per-chunk report artifact ---
+// Emit a sorted table (markdown + JSON) of every emitted JS chunk and how
+// close it is to the per-chunk threshold. CI uploads this so reviewers can
+// see at a glance which chunk is closest to the limit.
+const allChunks = allFiles
+  .map((f) => {
+    const sizeKB = kb(statSync(join(DIST, f)).size);
+    const exempt = PER_CHUNK_EXEMPT.some((re) => re.test(f));
+    const budget = f === entryFile
+      ? BUDGETS.mainEntryKB
+      : adminFile && f === adminFile
+        ? BUDGETS.adminChunkKB
+        : BUDGETS.perChunkKB;
+    return {
+      file: f,
+      sizeKB,
+      budgetKB: budget,
+      pctOfBudget: Math.round((sizeKB / budget) * 100),
+      exemptFromPerChunkCeiling: exempt,
+    };
+  })
+  .sort((a, b) => b.pctOfBudget - a.pctOfBudget);
+
+const reportDir = "dist/reports";
+mkdirSync(reportDir, { recursive: true });
+
+writeFileSync(
+  join(reportDir, "bundle-size.json"),
+  JSON.stringify(
+    {
+      generatedAt: new Date().toISOString(),
+      budgets: BUDGETS,
+      entry: { file: entryFile, sizeKB: kb(entrySize) },
+      admin: adminFile ? { file: adminFile, sizeKB: kb(adminSize) } : null,
+      initialJsKB: kb(initialSize),
+      chunks: allChunks,
+    },
+    null,
+    2,
+  ),
+);
+
+const mdRows = allChunks
+  .map(
+    (c) =>
+      `| ${c.file} | ${c.sizeKB} | ${c.budgetKB} | ${c.pctOfBudget}% |`,
+  )
+  .join("\n");
+writeFileSync(
+  join(reportDir, "bundle-size.md"),
+  `# Bundle size report\n\n` +
+    `Generated: ${new Date().toISOString()}\n\n` +
+    `Main entry: **${kb(entrySize)} KB** / ${BUDGETS.mainEntryKB} KB\n` +
+    `Admin chunk: **${kb(adminSize)} KB** / ${BUDGETS.adminChunkKB} KB\n` +
+    `Initial JS: **${kb(initialSize)} KB** / ${BUDGETS.totalInitialKB} KB\n\n` +
+    `## Per-chunk (sorted by % of budget)\n\n` +
+    `| Chunk | Size (KB) | Budget (KB) | % of budget |\n` +
+    `| --- | ---: | ---: | ---: |\n` +
+    mdRows +
+    `\n`,
+);
+
+console.log(`\n📄 Per-chunk report written to ${reportDir}/bundle-size.{json,md}`);
+console.log(`    Top chunk: ${allChunks[0].file} @ ${allChunks[0].pctOfBudget}% of budget`);
+
 console.log("=".repeat(64));
 if (failed) {
   console.error("\nBundle-size budget exceeded. See ✗ lines above.");
@@ -171,3 +236,4 @@ if (failed) {
   process.exit(1);
 }
 console.log("\nAll bundle-size budgets respected.\n");
+
