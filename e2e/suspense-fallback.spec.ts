@@ -121,3 +121,4 @@ test.describe("Suspense fallback never flashes on public routes", () => {
       ).toHaveCount(0);
     });
   }
+});
