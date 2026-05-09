@@ -73,6 +73,11 @@ const renderApp = (initialPath: string) =>
 describe("Admin auth flow (e2e)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Safe default so AdminLogin's "already authenticated?" probe never throws.
+    getSession.mockResolvedValue({ data: { session: null } });
+    onAuthStateChange.mockImplementation(() => ({
+      data: { subscription: { unsubscribe: vi.fn() } },
+    }));
   });
 
   it("renders the login form when navigating to /admin/login", async () => {
