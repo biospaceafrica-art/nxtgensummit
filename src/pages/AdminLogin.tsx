@@ -25,6 +25,25 @@ const AdminLogin = () => {
     import("./Admin");
   }, []);
 
+  // If the visitor is already an authenticated admin, send them straight
+  // to /admin instead of showing the login form again.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) return;
+      const res = await supabase.functions.invoke("check-admin", {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      if (!cancelled && res.data?.isAdmin) {
+        navigate("/admin", { replace: true });
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [navigate]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);

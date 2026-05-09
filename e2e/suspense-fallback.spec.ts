@@ -78,4 +78,47 @@ test.describe("Suspense fallback never flashes on public routes", () => {
     const visibleFallback = await page.locator('div.min-h-\\[60vh\\] div.animate-spin').count();
     expect(visibleFallback).toBe(0);
   });
+
+  // Every public route in src/App.tsx — including a few with realistic
+  // query strings and hash fragments — should render without ever showing
+  // the Suspense fallback to a user.
+  const publicDeepLinks = [
+    "/",
+    "/register",
+    "/register?track=career",
+    "/register?ref=newsletter&utm_source=email",
+    "/fellowship",
+    "/fellowship?tab=business",
+    "/speakers",
+    "/speakers?day=2",
+    "/schedule",
+    "/schedule?track=enterprise&day=1",
+    "/scholarship",
+    "/plant-a-seed",
+    "/feedback?session=keynote",
+    "/gallery",
+    "/gallery?album=2025",
+    "/volunteer",
+    "/networking",
+    "/badge",
+    "/check-in",
+    "/?utm_campaign=launch#hero",
+  ];
+
+  for (const path of publicDeepLinks) {
+    test(`deep link ${path} never shows Suspense fallback`, async ({ page }) => {
+      await page.goto(path, { waitUntil: "domcontentloaded" });
+      // First paint check.
+      const initial = await page
+        .locator('div.min-h-\\[60vh\\] div.animate-spin')
+        .count();
+      expect(initial, `fallback visible on first paint for ${path}`).toBe(0);
+      // After full network settle, nothing should remain on screen either.
+      await page.waitForLoadState("networkidle");
+      await expect(
+        page.locator('div.min-h-\\[60vh\\] div.animate-spin'),
+        `fallback visible after load for ${path}`,
+      ).toHaveCount(0);
+    });
+  }
 });

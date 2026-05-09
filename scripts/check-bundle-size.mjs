@@ -231,8 +231,22 @@ console.log(`    Top chunk: ${allChunks[0].file} @ ${allChunks[0].pctOfBudget}% 
 
 console.log("=".repeat(64));
 if (failed) {
+  const closest = allChunks[0];
   console.error("\nBundle-size budget exceeded. See ✗ lines above.");
-  console.error("If a regression is intentional, update BUDGETS in scripts/check-bundle-size.mjs.\n");
+  console.error(
+    `Closest-to-budget chunk: ${closest.file} — ${closest.sizeKB} KB / ` +
+      `${closest.budgetKB} KB (${closest.pctOfBudget}% of budget).`,
+  );
+  // Top 5 chunks for quick triage in the failure log.
+  console.error("\nTop 5 chunks by % of budget:");
+  for (const c of allChunks.slice(0, 5)) {
+    console.error(
+      `  - ${c.file}: ${c.sizeKB} KB / ${c.budgetKB} KB (${c.pctOfBudget}%)`,
+    );
+  }
+  console.error(
+    "\nIf a regression is intentional, update BUDGETS in scripts/check-bundle-size.mjs.\n",
+  );
   process.exit(1);
 }
 console.log("\nAll bundle-size budgets respected.\n");
