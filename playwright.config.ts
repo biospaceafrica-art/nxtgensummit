@@ -12,7 +12,11 @@ export default defineConfig({
   reporter: process.env.CI ? [["html", { open: "never" }], ["list"]] : "list",
   use: {
     baseURL: "http://localhost:4173",
+    // Capture rich debugging artifacts ONLY on failure so passing runs stay fast.
+    // CI uploads the playwright-report/ directory which embeds these.
     trace: "retain-on-failure",
+    screenshot: "only-on-failure",
+    video: "retain-on-failure",
   },
   webServer: {
     command: "npm run preview -- --port 4173 --strictPort",
