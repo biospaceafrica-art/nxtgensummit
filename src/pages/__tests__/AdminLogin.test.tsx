@@ -6,7 +6,7 @@ import { Suspense, lazy } from "react";
 // Mock supabase client used across the admin pages.
 const signInWithPassword = vi.fn();
 const getSession = vi.fn();
-const onAuthStateChange = vi.fn(() => ({
+const onAuthStateChange = vi.fn((..._args: unknown[]) => ({
   data: { subscription: { unsubscribe: vi.fn() } },
 }));
 const signOut = vi.fn();
