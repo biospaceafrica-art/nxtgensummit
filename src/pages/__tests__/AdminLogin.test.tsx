@@ -170,4 +170,61 @@ describe("Admin auth flow (e2e)", () => {
       await screen.findByRole("heading", { name: /admin login/i }, { timeout: 4000 }),
     ).toBeInTheDocument();
   });
+
+  it("redirects to /admin/login when the session expires while on /admin", async () => {
+    const session = {
+      user: { id: "u1", email: "admin@example.com" },
+      access_token: "token",
+    };
+    getSession.mockResolvedValueOnce({ data: { session } });
+    invoke.mockResolvedValue({ data: { isAdmin: true } });
+
+    // Capture the auth state callback so we can fire SIGNED_OUT later.
+    let authCallback: ((event: string, session: unknown) => void) | null = null;
+    onAuthStateChange.mockImplementation((cb: (event: string, session: unknown) => void) => {
+      authCallback = cb;
+      return { data: { subscription: { unsubscribe: vi.fn() } } };
+    });
+
+    renderApp("/admin");
+
+    // Wait until the dashboard has rendered.
+    await screen.findByRole(
+      "button",
+      { name: /log\s*out|sign\s*out|logout/i },
+      { timeout: 4000 },
+    );
+
+    // Simulate Supabase emitting SIGNED_OUT due to token/session expiry.
+    expect(authCallback).not.toBeNull();
+    authCallback!("SIGNED_OUT", null);
+
+    expect(
+      await screen.findByRole("heading", { name: /admin login/i }, { timeout: 4000 }),
+    ).toBeInTheDocument();
+  });
+
+  it("redirects an already-authenticated admin from /admin/login to /admin", async () => {
+    const session = {
+      user: { id: "u1", email: "admin@example.com" },
+      access_token: "token",
+    };
+    getSession.mockResolvedValue({ data: { session } });
+    invoke.mockResolvedValue({ data: { isAdmin: true } });
+
+    renderApp("/admin/login");
+
+    // The login form mounts first, then the redirect effect kicks in once
+    // check-admin resolves and the dashboard takes over.
+    await waitFor(
+      () => {
+        expect(screen.queryByRole("heading", { name: /admin login/i })).not.toBeInTheDocument();
+      },
+      { timeout: 4000 },
+    );
+    expect(invoke).toHaveBeenCalledWith(
+      "check-admin",
+      expect.objectContaining({ headers: expect.any(Object) }),
+    );
+  });
 });
