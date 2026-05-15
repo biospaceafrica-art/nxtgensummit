@@ -95,6 +95,11 @@ const Register = () => {
 
   return (
     <div className="min-h-screen pt-20 sm:pt-24 pb-12 sm:pb-16">
+      <SEO
+        title="Register — NextGen Summit 2026"
+        description="Reserve your spot at NextGen Summit 2026. Choose your fellowship track and join 2,000+ leaders in Abuja, Nigeria."
+        path="/register"
+      />
       <div className="container max-w-2xl px-4">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
