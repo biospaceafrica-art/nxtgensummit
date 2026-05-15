@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import SEO from "@/components/SEO";
 import audreyImg from "@/assets/speakers/audrey-joe-ezigbo.jpeg";
 import offiongImg from "@/assets/speakers/offiong-archibong.jpeg";
 import lucyImg from "@/assets/speakers/lucy-doggett-kamero.jpeg";
