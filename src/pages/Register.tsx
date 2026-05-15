@@ -9,6 +9,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Briefcase, GraduationCap, Search } from "lucide-react";
+import SEO from "@/components/SEO";
 
 const businessCourses = [
   "Entrepreneurship & Innovation",

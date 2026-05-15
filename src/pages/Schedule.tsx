@@ -117,6 +117,11 @@ const Schedule = () => {
 
   return (
     <div className="min-h-screen pt-24 pb-16">
+      <SEO
+        title="Schedule — NextGen Summit 2026"
+        description="Full agenda for NextGen Summit 2026 in Abuja: keynotes, masterclasses, and breakout sessions across business and career tracks."
+        path="/schedule"
+      />
       <div className="container max-w-3xl px-4">
         <motion.div
           initial={{ opacity: 0, y: 30 }}

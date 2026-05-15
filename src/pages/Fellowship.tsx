@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { GraduationCap, Briefcase, BookOpen, Brain, Users, Target, Lightbulb, Shield } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import SEO from "@/components/SEO";
 
 const softSkills = [
   "Creative & Critical Thinking", "Problem-Solving", "Creativity & Innovation",
@@ -24,6 +25,11 @@ const careerCourses = [
 
 const Fellowship = () => (
   <div className="min-h-screen pt-20 sm:pt-24 pb-12 sm:pb-16">
+    <SEO
+      title="Fellowship — Business & Career Champions Tracks"
+      description="Explore Business and Career Champions tracks with hard and soft-skill courses preparing the next generation of African leaders."
+      path="/fellowship"
+    />
     <div className="container px-4">
       {/* Header */}
       <motion.div
