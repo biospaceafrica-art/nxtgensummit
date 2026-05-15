@@ -16,8 +16,6 @@ const Index = () => (
       description="Africa's premier faith-driven business and career leadership summit. Join 2,000+ delegates June 20, 2026 in Abuja, Nigeria."
       path="/"
     />
-
-  <>
     <HeroSection />
     <StatsSection />
     <AboutSection />

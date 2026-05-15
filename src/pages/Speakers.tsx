@@ -40,6 +40,11 @@ const speakers = [
 
 const Speakers = () => (
   <div className="min-h-screen pt-20 sm:pt-24 pb-12 sm:pb-16">
+    <SEO
+      title="Speakers — NextGen Summit 2026"
+      description="Meet the world-class speakers leading Africa's premier faith-driven leadership summit."
+      path="/speakers"
+    />
     <div className="container px-4">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
