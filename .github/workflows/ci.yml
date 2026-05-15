@@ -83,7 +83,7 @@ jobs:
       - name: Run Playwright tests
         run: npx playwright test
 
-      - name: Upload Playwright report
+      - name: Upload Playwright HTML report
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -91,3 +91,35 @@ jobs:
           path: playwright-report/
           if-no-files-found: ignore
           retention-days: 14
+
+      - name: Upload Playwright traces & videos (failures)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  bundle-report-comment:
+    name: Comment bundle-size report on PR
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      pull-requests: write
+      contents: read
+    steps:
+      - name: Download bundle-size report
+        uses: actions/download-artifact@v4
+        with:
+          name: bundle-size-report
+          path: bundle-report
+        continue-on-error: true
+
+      - name: Comment on PR
+        if: hashFiles('bundle-report/*.md') != ''
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: bundle-size
+          path: bundle-report/bundle-size-report.md
