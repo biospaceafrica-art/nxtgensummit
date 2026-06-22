@@ -91,12 +91,12 @@ const Networking = () => {
   }, [chatWith, user]);
 
   const fetchPublicData = async () => {
-    const [profRes, regRes] = await Promise.all([
+    const [profRes, dirRes] = await Promise.all([
       supabase.from("networking_profiles").select("id, user_id, full_name, organization, bio, photo_url").order("created_at", { ascending: false }),
-      supabase.from("registrations").select("id, full_name, fellowship_track, selected_course, current_status").order("created_at", { ascending: false }),
+      supabase.functions.invoke("attendee-directory"),
     ]);
     if (profRes.data) setProfiles(profRes.data);
-    if (regRes.data) setRegistrations(regRes.data as Registration[]);
+    if (dirRes.data?.attendees) setRegistrations(dirRes.data.attendees as Registration[]);
   };
 
   const fetchMyProfile = async () => {
