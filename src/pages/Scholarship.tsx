@@ -48,14 +48,12 @@ const Scholarship = () => {
     setChecking(true);
     setCheckResult(null);
     try {
-      const { data, error } = await supabase
-        .from("registrations")
-        .select("full_name, fellowship_track, payment_confirmed")
-        .eq("email", checkerEmail.trim().toLowerCase())
-        .maybeSingle();
+      const { data, error } = await supabase.functions.invoke("check-registration-status", {
+        body: { email: checkerEmail.trim().toLowerCase() },
+      });
       if (error) throw error;
-      if (data) {
-        setCheckResult({ found: true, name: data.full_name, track: data.fellowship_track, confirmed: data.payment_confirmed });
+      if (data?.found) {
+        setCheckResult({ found: true, name: data.name, track: data.track, confirmed: data.confirmed });
       } else {
         setCheckResult({ found: false });
       }
