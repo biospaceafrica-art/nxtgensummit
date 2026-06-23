@@ -56,7 +56,7 @@ const Signup = () => {
       <SEO
         title="Create Account — NextGen Summit 2026"
         description="Join the NextGen Summit community. Create your free account to access networking, the schedule, and your digital badge."
-        canonical="/signup"
+        path="/signup"
       />
       <div className="min-h-screen flex items-center justify-center px-4 py-24">
         <motion.div

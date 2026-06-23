@@ -44,7 +44,7 @@ const Login = () => {
       <SEO
         title="Sign In — NextGen Summit 2026"
         description="Sign in to your NextGen Summit account to access your ticket, networking, and personalized schedule."
-        canonical="/login"
+        path="/login"
       />
       <div className="min-h-screen flex items-center justify-center px-4 py-24">
         <motion.div
