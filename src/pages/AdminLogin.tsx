@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Lock, KeyRound } from "lucide-react";
 import nextgenLogo from "@/assets/nextgen-logo.png";
+import GoogleButton from "@/components/auth/GoogleButton";
 
 const AdminLogin = () => {
   const [email, setEmail] = useState("");
