@@ -130,39 +130,50 @@ const AdminLogin = () => {
         </div>
 
         {!showPasswordChange ? (
-          <form onSubmit={handleLogin} className="glass rounded-2xl p-6 sm:p-8 space-y-5">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="admin@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
+          <div className="glass rounded-2xl p-6 sm:p-8 space-y-5">
+            <GoogleButton label="Sign in with Google" redirectTo={`${window.location.origin}/admin`} />
+            <div className="flex items-center gap-3">
+              <div className="h-px flex-1 bg-border" />
+              <span className="text-xs text-muted-foreground uppercase tracking-wider">or</span>
+              <div className="h-px flex-1 bg-border" />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            <Button
-              type="submit"
-              size="lg"
-              disabled={loading}
-              className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-semibold"
-            >
-              <Lock className="w-4 h-4 mr-2" />
-              {loading ? "Signing in..." : "Sign In"}
-            </Button>
-          </form>
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="admin@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+              <Button
+                type="submit"
+                size="lg"
+                disabled={loading}
+                className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-semibold"
+              >
+                <Lock className="w-4 h-4 mr-2" />
+                {loading ? "Signing in..." : "Sign In"}
+              </Button>
+            </form>
+            <p className="text-xs text-center text-muted-foreground">
+              Google sign-in requires an account with admin privileges.
+            </p>
+          </div>
         ) : (
           <form onSubmit={handlePasswordChange} className="glass rounded-2xl p-6 sm:p-8 space-y-5">
             <div className="p-3 rounded-lg bg-primary/10 border border-primary/20 text-sm text-center">
