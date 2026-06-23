@@ -35,30 +35,16 @@ const HeroSection = () => {
     return () => clearInterval(id);
   }, []);
 
-  // Load iframe only after section enters viewport + small rAF delay so
-  // LCP / above-the-fold content renders first.
+  // Load the background iframe shortly after mount so LCP paints first
+  // but the video reliably starts (IntersectionObserver was sometimes
+  // never firing for above-the-fold hero on slow connections).
   useEffect(() => {
-    const el = sectionRef.current;
-    if (!el) return;
+    // Respect explicit data-saver only; don't skip on 2g auto-detection
+    const conn = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
+    if (conn?.saveData) return;
 
-    // On low-end / save-data connections skip the video entirely
-    const conn = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
-    if (conn?.saveData || conn?.effectiveType === "2g") return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          // Defer until after the browser has painted the initial frame
-          requestAnimationFrame(() => {
-            setTimeout(() => setVideoLoaded(true), 300);
-          });
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.1 }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
+    const id = window.setTimeout(() => setVideoLoaded(true), 600);
+    return () => window.clearTimeout(id);
   }, []);
 
   return (

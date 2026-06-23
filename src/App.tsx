@@ -23,6 +23,8 @@ const Volunteer = lazy(() => import("./pages/Volunteer"));
 const Networking = lazy(() => import("./pages/Networking"));
 const Badge = lazy(() => import("./pages/Badge"));
 const CheckIn = lazy(() => import("./pages/CheckIn"));
+const Login = lazy(() => import("./pages/Login"));
+const Signup = lazy(() => import("./pages/Signup"));
 
 // Admin bundle (heaviest — strictly lazy + prefetchable)
 const adminImport = () => import("./pages/Admin");
@@ -75,6 +77,8 @@ const App = () => (
             <Route path="/networking" element={lazyRoute(Networking)} />
             <Route path="/badge" element={lazyRoute(Badge)} />
             <Route path="/check-in" element={lazyRoute(CheckIn)} />
+            <Route path="/login" element={lazyRoute(Login)} />
+            <Route path="/signup" element={lazyRoute(Signup)} />
             <Route path="/admin/login" element={lazyRoute(AdminLogin)} />
             <Route path="/admin" element={lazyRoute(Admin)} />
             {/* Catch-all for any /admin/* sub-path: Admin handles auth + redirects
