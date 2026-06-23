@@ -43,6 +43,9 @@ const Navbar = () => {
         </div>
 
         <div className="hidden lg:flex items-center gap-3">
+          <Link to="/login">
+            <Button variant="ghost" className="font-medium">Sign In</Button>
+          </Link>
           <Link to="/register">
             <Button className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold">
               Register Free
@@ -70,6 +73,9 @@ const Navbar = () => {
                 {link.label}
               </a>
             ))}
+            <Link to="/login" onClick={() => setOpen(false)}>
+              <Button variant="outline" className="w-full">Sign In</Button>
+            </Link>
             <Link to="/register" onClick={() => setOpen(false)}>
               <Button className="w-full bg-primary text-primary-foreground">Register Free</Button>
             </Link>
