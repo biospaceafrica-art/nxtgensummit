@@ -110,7 +110,7 @@ const HeroSection = () => {
               {[0, 1].map((i) => (
                 <div key={i} className="flex items-center gap-5 px-4">
                   <span className="text-sm sm:text-lg md:text-xl font-display font-bold text-foreground tracking-wide">
-                    📅 27th June, 2026
+                    📅 26th September, 2026
                   </span>
                   <span className="w-1 h-1 rounded-full bg-primary/60 shrink-0" />
                   <span className="text-sm sm:text-lg md:text-xl font-display font-bold text-gradient tracking-wide">
