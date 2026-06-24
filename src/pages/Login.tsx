@@ -18,9 +18,28 @@ const Login = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    let cancelled = false;
+    const routeByRole = async (accessToken: string) => {
+      try {
+        const res = await supabase.functions.invoke("check-admin", {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        if (cancelled) return;
+        navigate(res.data?.isAdmin ? "/admin" : "/", { replace: true });
+      } catch {
+        if (!cancelled) navigate("/", { replace: true });
+      }
+    };
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) navigate("/", { replace: true });
+      if (session?.access_token) routeByRole(session.access_token);
     });
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.access_token) routeByRole(session.access_token);
+    });
+    return () => {
+      cancelled = true;
+      sub.subscription.unsubscribe();
+    };
   }, [navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -30,7 +49,7 @@ const Login = () => {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
       toast.success("Welcome back!");
-      navigate("/");
+      // onAuthStateChange will route to /admin or / based on role.
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Login failed.";
       toast.error(msg);
