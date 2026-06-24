@@ -19,12 +19,19 @@ const GoogleButton = ({ label = "Continue with Google", redirectTo }: Props) => 
 
   const handleClick = async () => {
     setLoading(true);
+    const loadingToast = toast.loading("Redirecting to Google...");
     try {
       const result = await lovable.auth.signInWithOAuth("google", {
         redirect_uri: redirectTo ?? window.location.origin,
       });
+      toast.dismiss(loadingToast);
       if (result.error) {
-        toast.error(result.error.message || "Google sign-in failed.");
+        const msg = (result.error.message || "").toLowerCase();
+        if (msg.includes("cancel") || msg.includes("closed") || msg.includes("denied")) {
+          toast.info("Google sign-in was cancelled.");
+        } else {
+          toast.error(result.error.message || "Google sign-in failed. Please try again.");
+        }
         setLoading(false);
         return;
       }
@@ -33,8 +40,14 @@ const GoogleButton = ({ label = "Continue with Google", redirectTo }: Props) => 
         toast.success("Signed in with Google.");
       }
     } catch (err) {
+      toast.dismiss(loadingToast);
       const msg = err instanceof Error ? err.message : "Google sign-in failed.";
-      toast.error(msg);
+      const lower = msg.toLowerCase();
+      if (lower.includes("cancel") || lower.includes("closed") || lower.includes("popup")) {
+        toast.info("Google sign-in was cancelled.");
+      } else {
+        toast.error(msg);
+      }
       setLoading(false);
     }
   };

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { X, Share2 } from "lucide-react";
 
-const TARGET_DATE = new Date("2026-06-27T09:00:00+01:00");
+const TARGET_DATE = new Date("2026-09-26T09:00:00+01:00");
 const DISMISS_KEY = "countdown-dismissed";
 const DISMISS_TIME_KEY = "countdown-dismissed-at";
 const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;

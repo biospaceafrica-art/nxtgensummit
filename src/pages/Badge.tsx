@@ -17,7 +17,7 @@ const Badge = () => {
   const qrData = JSON.stringify({ name, email, track, course, event: "NextGen Summit 2026" });
 
   const shareText = useMemo(
-    () => `I'm attending NextGen Summit 2026 as a ${trackLabel}! 🚀 Join me on June 27 at The Purple Place, Abuja.`,
+    () => `I'm attending NextGen Summit 2026 as a ${trackLabel}! 🚀 Join me on September 26 at The Purple Place, Abuja.`,
     [trackLabel]
   );
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";
@@ -116,7 +116,7 @@ const Badge = () => {
               </div>
             </div>
             <div className="pt-2 space-y-0.5">
-              <p className="text-[10px] text-muted-foreground">📅 June 27, 2026 · 11:00 AM</p>
+              <p className="text-[10px] text-muted-foreground">📅 September 26, 2026 · 11:00 AM</p>
               <p className="text-[10px] text-muted-foreground">📍 The Purple Place, Lokogoma, Abuja</p>
             </div>
           </div>

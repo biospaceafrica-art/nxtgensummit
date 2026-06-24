@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import FloatingParticles from "./FloatingParticles";
 
-const TARGET_DATE = new Date("2026-06-27T09:00:00+01:00");
+const TARGET_DATE = new Date("2026-09-26T09:00:00+01:00");
 const VIDEO_ID = "FeoZU_jmFqQ";
-// YouTube low-res thumbnail as instant poster (no extra request — served from ytimg CDN)
+// YouTube thumbnail as instant poster (served from ytimg CDN, no extra round-trip).
 const POSTER_URL = `https://i.ytimg.com/vi/${VIDEO_ID}/maxresdefault.jpg`;
 
 const HeroSection = () => {
@@ -36,12 +36,15 @@ const HeroSection = () => {
   }, []);
 
   // Load the background iframe shortly after mount so LCP paints first
-  // but the video reliably starts (IntersectionObserver was sometimes
-  // never firing for above-the-fold hero on slow connections).
+  // but the video reliably starts. Honors data-saver and reduced-motion.
   useEffect(() => {
-    // Respect explicit data-saver only; don't skip on 2g auto-detection
     const conn = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
     if (conn?.saveData) return;
+
+    const reduceMotion =
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (reduceMotion) return;
 
     const id = window.setTimeout(() => setVideoLoaded(true), 600);
     return () => window.clearTimeout(id);
@@ -107,7 +110,7 @@ const HeroSection = () => {
               {[0, 1].map((i) => (
                 <div key={i} className="flex items-center gap-5 px-4">
                   <span className="text-sm sm:text-lg md:text-xl font-display font-bold text-foreground tracking-wide">
-                    📅 27th June, 2026
+                    📅 26th September, 2026
                   </span>
                   <span className="w-1 h-1 rounded-full bg-primary/60 shrink-0" />
                   <span className="text-sm sm:text-lg md:text-xl font-display font-bold text-gradient tracking-wide">
