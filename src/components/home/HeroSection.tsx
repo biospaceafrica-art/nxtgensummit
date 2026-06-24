@@ -36,12 +36,15 @@ const HeroSection = () => {
   }, []);
 
   // Load the background iframe shortly after mount so LCP paints first
-  // but the video reliably starts (IntersectionObserver was sometimes
-  // never firing for above-the-fold hero on slow connections).
+  // but the video reliably starts. Honors data-saver and reduced-motion.
   useEffect(() => {
-    // Respect explicit data-saver only; don't skip on 2g auto-detection
     const conn = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
     if (conn?.saveData) return;
+
+    const reduceMotion =
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (reduceMotion) return;
 
     const id = window.setTimeout(() => setVideoLoaded(true), 600);
     return () => window.clearTimeout(id);
