@@ -87,6 +87,7 @@ const App = () => (
             <Route path="/signup" element={lazyRoute(Signup)} />
             <Route path="/forgot-password" element={lazyRoute(ForgotPassword)} />
             <Route path="/reset-password" element={lazyRoute(ResetPassword)} />
+            <Route path="/selection" element={lazyRoute(SelectionDashboard)} />
             <Route path="/admin/login" element={lazyRoute(AdminLogin)} />
             <Route path="/admin" element={lazyRoute(Admin)} />
             {/* Catch-all for any /admin/* sub-path: Admin handles auth + redirects
