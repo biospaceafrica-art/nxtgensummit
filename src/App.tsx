@@ -27,6 +27,9 @@ const Login = lazy(() => import("./pages/Login"));
 const Signup = lazy(() => import("./pages/Signup"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const SelectionDashboard = lazy(() => import("./pages/SelectionDashboard"));
+
+
 
 // Admin bundle (heaviest — strictly lazy + prefetchable)
 const adminImport = () => import("./pages/Admin");
