@@ -95,7 +95,18 @@ const ResetPassword = () => {
           </div>
 
           <div className="glass rounded-2xl p-6 sm:p-8 space-y-5">
-            {!ready ? (
+            {linkError ? (
+              <div
+                role="alert"
+                data-testid="reset-link-error"
+                className="text-center text-sm space-y-3"
+              >
+                <p className="text-destructive font-medium">{linkError}</p>
+                <Link to="/forgot-password" className="text-primary hover:underline font-medium inline-block">
+                  Request a new link
+                </Link>
+              </div>
+            ) : !ready ? (
               <div className="text-center text-sm text-muted-foreground space-y-3">
                 <p>
                   This page must be opened from the password reset link sent to your email.
