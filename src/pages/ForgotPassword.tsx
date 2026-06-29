@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -10,28 +10,79 @@ import { Mail } from "lucide-react";
 import nextgenLogo from "@/assets/nextgen-logo.png";
 import SEO from "@/components/SEO";
 
+// Local cooldown to avoid spamming the auth server.
+// Supabase also rate-limits server-side; this just gives faster, friendlier
+// feedback and stops the user from making redundant requests.
+const COOLDOWN_SECONDS = 60;
+const STORAGE_KEY = "nextgen.fp.cooldownUntil";
+
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
+  const [rateError, setRateError] = useState<string | null>(null);
+
+  // Restore + tick the cooldown across reloads.
+  useEffect(() => {
+    const until = Number(localStorage.getItem(STORAGE_KEY) || 0);
+    const tick = () => {
+      const remaining = Math.max(0, Math.ceil((until - Date.now()) / 1000));
+      setCooldown(remaining);
+      if (remaining === 0) setRateError(null);
+    };
+    tick();
+    const id = window.setInterval(tick, 1000);
+    return () => window.clearInterval(id);
+  }, [sent]);
+
+  const startCooldown = (seconds = COOLDOWN_SECONDS) => {
+    const until = Date.now() + seconds * 1000;
+    localStorage.setItem(STORAGE_KEY, String(until));
+    setCooldown(seconds);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (cooldown > 0) {
+      setRateError(`Please wait ${cooldown}s before requesting another reset email.`);
+      return;
+    }
     setLoading(true);
+    setRateError(null);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
       });
       if (error) throw error;
       setSent(true);
-      toast.success("Check your inbox for a reset link.");
+      startCooldown();
+      toast.success("If an account exists, a reset link is on its way.");
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Could not send reset email.";
-      toast.error(msg);
+      const raw = err instanceof Error ? err.message : "Could not send reset email.";
+      const lower = raw.toLowerCase();
+      // Map known rate-limit / throttle responses (e.g. Supabase
+      // "email rate limit exceeded" or "over_email_send_rate_limit") to a
+      // single, friendly UX with a visible cooldown.
+      if (
+        lower.includes("rate limit") ||
+        lower.includes("too many") ||
+        lower.includes("over_email_send_rate_limit") ||
+        lower.includes("throttle")
+      ) {
+        const friendly = "Too many reset requests. Please wait a minute before trying again.";
+        setRateError(friendly);
+        startCooldown();
+        toast.error(friendly);
+      } else {
+        toast.error(raw);
+      }
     } finally {
       setLoading(false);
     }
   };
+
+  const disabled = loading || cooldown > 0;
 
   return (
     <>
@@ -64,12 +115,17 @@ const ForgotPassword = () => {
                   If an account exists for <span className="text-foreground font-medium">{email}</span>,
                   a reset link is on its way. The link expires shortly for security.
                 </p>
+                {cooldown > 0 && (
+                  <p data-testid="fp-cooldown" className="text-xs text-muted-foreground">
+                    You can request another email in {cooldown}s.
+                  </p>
+                )}
                 <Link to="/login" className="text-primary hover:underline text-sm font-medium inline-block">
                   Back to sign in
                 </Link>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4" noValidate>
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
                   <Input
@@ -81,14 +137,27 @@ const ForgotPassword = () => {
                     required
                   />
                 </div>
+                {rateError && (
+                  <p
+                    role="alert"
+                    data-testid="fp-rate-error"
+                    className="text-sm text-destructive"
+                  >
+                    {rateError}
+                  </p>
+                )}
                 <Button
                   type="submit"
                   size="lg"
-                  disabled={loading}
+                  disabled={disabled}
                   className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-semibold"
                 >
                   <Mail className="w-4 h-4 mr-2" />
-                  {loading ? "Sending..." : "Send reset link"}
+                  {loading
+                    ? "Sending..."
+                    : cooldown > 0
+                      ? `Try again in ${cooldown}s`
+                      : "Send reset link"}
                 </Button>
                 <p className="text-sm text-center text-muted-foreground">
                   Remembered it?{" "}
