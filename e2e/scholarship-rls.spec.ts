@@ -92,6 +92,32 @@ test.describe("scholarship_applicants RLS", () => {
       .update({ full_name: "Tampered Name" })
       .eq("id", target.id);
     expect(nameError).not.toBeNull();
+    expect(nameError!.message).toMatch(/only change status|not authorized/i);
+
+    // 5. Forbidden update (phone) is blocked.
+    const { error: phoneError } = await supabase
+      .from("scholarship_applicants")
+      .update({ phone: "+10000000000" })
+      .eq("id", target.id);
+    expect(phoneError).not.toBeNull();
+    expect(phoneError!.message).toMatch(/only change status|not authorized/i);
+
+    // 6. Forbidden update (source) is blocked.
+    const { error: sourceError } = await supabase
+      .from("scholarship_applicants")
+      .update({ source: "tampered" })
+      .eq("id", target.id);
+    expect(sourceError).not.toBeNull();
+    expect(sourceError!.message).toMatch(/only change status|not authorized/i);
+
+    // 7. Confirm identity fields are unchanged after attack attempts.
+    const { data: afterRows } = await supabase
+      .from("scholarship_applicants")
+      .select("id, full_name, email, phone, source")
+      .eq("id", target.id)
+      .single();
+    expect(afterRows?.email).toBe(target.email);
+    expect(afterRows?.full_name).toBe(target.full_name);
 
     await supabase.auth.signOut();
   });
