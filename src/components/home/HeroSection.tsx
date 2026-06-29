@@ -96,7 +96,6 @@ const HeroSection = () => {
           />
         </div>
       )}
-      )}
 
       {/* Overlays */}
       <div className="absolute inset-0 z-[2] bg-background/55 backdrop-blur-[1px]" />
