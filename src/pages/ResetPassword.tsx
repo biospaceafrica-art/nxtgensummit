@@ -10,13 +10,27 @@ import { KeyRound } from "lucide-react";
 import nextgenLogo from "@/assets/nextgen-logo.png";
 import SEO from "@/components/SEO";
 
+// Password policy enforced both inline and at submit time.
+// Keep these regexes in sync with any backend rules.
+const PASSWORD_RULES = [
+  { id: "len", label: "At least 8 characters", test: (p: string) => p.length >= 8 },
+  { id: "upper", label: "One uppercase letter (A-Z)", test: (p: string) => /[A-Z]/.test(p) },
+  { id: "lower", label: "One lowercase letter (a-z)", test: (p: string) => /[a-z]/.test(p) },
+  { id: "num", label: "One number (0-9)", test: (p: string) => /\d/.test(p) },
+];
+
 const ResetPassword = () => {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
   const [ready, setReady] = useState(false);
   const [linkError, setLinkError] = useState<string | null>(null);
+  const [inlineError, setInlineError] = useState<string | null>(null);
   const navigate = useNavigate();
+
+  const ruleResults = PASSWORD_RULES.map((r) => ({ ...r, ok: r.test(password) }));
+  const allRulesPass = ruleResults.every((r) => r.ok);
+  const confirmMismatch = confirm.length > 0 && confirm !== password;
 
   // Supabase recovery flow: the link contains a hash with access_token + type=recovery.
   // The auth client picks it up automatically and emits PASSWORD_RECOVERY.
@@ -51,12 +65,13 @@ const ResetPassword = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password.length < 8) {
-      toast.error("Password must be at least 8 characters.");
+    setInlineError(null);
+    if (!allRulesPass) {
+      setInlineError("Your password doesn't meet all the requirements yet.");
       return;
     }
     if (password !== confirm) {
-      toast.error("Passwords do not match.");
+      setInlineError("Passwords do not match.");
       return;
     }
     setLoading(true);
@@ -67,7 +82,12 @@ const ResetPassword = () => {
       navigate("/", { replace: true });
     } catch (err) {
       const raw = err instanceof Error ? err.message : "Could not update password.";
-      if (/expired|invalid|otp|jwt|token|session/i.test(raw.toLowerCase())) {
+      const lower = raw.toLowerCase();
+      if (/same.*password|new password should be different/i.test(lower)) {
+        setInlineError("Your new password must be different from your current one.");
+      } else if (/weak|short|at least|characters/i.test(lower)) {
+        setInlineError(raw);
+      } else if (/expired|invalid|otp|jwt|token|session/i.test(lower)) {
         const friendly = "Your password reset link has expired or already been used. Please request a new one.";
         setLinkError(friendly);
         toast.error(friendly);
@@ -122,7 +142,7 @@ const ResetPassword = () => {
                 </Link>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4" noValidate>
                 <div className="space-y-2">
                   <Label htmlFor="password">New password</Label>
                   <Input
@@ -131,9 +151,22 @@ const ResetPassword = () => {
                     placeholder="Minimum 8 characters"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    aria-invalid={password.length > 0 && !allRulesPass}
+                    aria-describedby="password-rules"
                     required
-                    minLength={8}
                   />
+                  <ul id="password-rules" data-testid="password-rules" className="text-xs space-y-1 pt-1">
+                    {ruleResults.map((r) => (
+                      <li
+                        key={r.id}
+                        data-testid={`rule-${r.id}`}
+                        data-ok={r.ok ? "true" : "false"}
+                        className={r.ok ? "text-emerald-500" : "text-muted-foreground"}
+                      >
+                        {r.ok ? "✓" : "○"} {r.label}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="confirm">Confirm password</Label>
@@ -143,14 +176,29 @@ const ResetPassword = () => {
                     placeholder="Re-enter password"
                     value={confirm}
                     onChange={(e) => setConfirm(e.target.value)}
+                    aria-invalid={confirmMismatch}
+                    aria-describedby={confirmMismatch ? "confirm-error" : undefined}
                     required
-                    minLength={8}
                   />
+                  {confirmMismatch && (
+                    <p id="confirm-error" data-testid="confirm-error" className="text-xs text-destructive">
+                      Passwords do not match.
+                    </p>
+                  )}
                 </div>
+                {inlineError && (
+                  <p
+                    role="alert"
+                    data-testid="reset-inline-error"
+                    className="text-sm text-destructive"
+                  >
+                    {inlineError}
+                  </p>
+                )}
                 <Button
                   type="submit"
                   size="lg"
-                  disabled={loading}
+                  disabled={loading || !allRulesPass || confirmMismatch || confirm.length === 0}
                   className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-semibold"
                 >
                   <KeyRound className="w-4 h-4 mr-2" />

@@ -368,6 +368,48 @@ export type Database = {
         }
         Relationships: []
       }
+      scholarship_applicants: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          notes: string | null
+          phone: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          source: string
+          status: Database["public"]["Enums"]["scholarship_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          source?: string
+          status?: Database["public"]["Enums"]["scholarship_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          source?: string
+          status?: Database["public"]["Enums"]["scholarship_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -466,6 +508,12 @@ export type Database = {
       app_role: "admin" | "user"
       attendee_status: "employed" | "unemployed" | "corp_member" | "student"
       fellowship_track: "career" | "enterprise"
+      scholarship_status:
+        | "pending"
+        | "shortlisted"
+        | "accepted"
+        | "rejected"
+        | "waitlist"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -596,6 +644,13 @@ export const Constants = {
       app_role: ["admin", "user"],
       attendee_status: ["employed", "unemployed", "corp_member", "student"],
       fellowship_track: ["career", "enterprise"],
+      scholarship_status: [
+        "pending",
+        "shortlisted",
+        "accepted",
+        "rejected",
+        "waitlist",
+      ],
     },
   },
 } as const
