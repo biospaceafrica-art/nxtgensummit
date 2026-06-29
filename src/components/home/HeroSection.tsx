@@ -12,7 +12,8 @@ const POSTER_URL = `https://i.ytimg.com/vi/${VIDEO_ID}/maxresdefault.jpg`;
 const HeroSection = () => {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, mins: 0, secs: 0 });
   const [isLive, setIsLive] = useState(false);
-  const [videoLoaded, setVideoLoaded] = useState(false);
+  const [shouldLoadVideo, setShouldLoadVideo] = useState(false);
+  const [videoFailed, setVideoFailed] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
 
   // Countdown timer
