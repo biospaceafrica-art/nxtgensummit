@@ -63,8 +63,9 @@ const HeroSection = () => {
 
       {/* YouTube iframe — lazy-loaded via IntersectionObserver */}
       {videoLoaded && (
-        <div className="absolute inset-0 z-[1] overflow-hidden">
+        <div className="absolute inset-0 z-[1] overflow-hidden" data-testid="hero-video-wrapper">
           <iframe
+            data-testid="hero-video-iframe"
             src={`https://www.youtube-nocookie.com/embed/${VIDEO_ID}?autoplay=1&mute=1&loop=1&playlist=${VIDEO_ID}&controls=0&showinfo=0&modestbranding=1&rel=0&playsinline=1&enablejsapi=0&iv_load_policy=3`}
             className="absolute w-[300%] h-[300%] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
             allow="autoplay; encrypted-media"

@@ -15,11 +15,27 @@ const ResetPassword = () => {
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
   const [ready, setReady] = useState(false);
+  const [linkError, setLinkError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   // Supabase recovery flow: the link contains a hash with access_token + type=recovery.
   // The auth client picks it up automatically and emits PASSWORD_RECOVERY.
+  // Expired/used/invalid tokens surface as `error=...&error_code=otp_expired` in the hash.
   useEffect(() => {
+    const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+    const errCode = hash.get("error_code") || hash.get("error");
+    if (errCode) {
+      const desc = hash.get("error_description")?.replace(/\+/g, " ") || "";
+      if (errCode === "otp_expired" || /expired/i.test(desc)) {
+        setLinkError("This password reset link has expired. Please request a new one.");
+      } else if (/used|consumed/i.test(desc)) {
+        setLinkError("This password reset link has already been used. Please request a new one.");
+      } else {
+        setLinkError(desc || "This password reset link is invalid. Please request a new one.");
+      }
+      return;
+    }
+
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY") setReady(true);
     });
@@ -50,8 +66,14 @@ const ResetPassword = () => {
       toast.success("Password updated. You're signed in.");
       navigate("/", { replace: true });
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Could not update password.";
-      toast.error(msg);
+      const raw = err instanceof Error ? err.message : "Could not update password.";
+      if (/expired|invalid|otp|jwt|token|session/i.test(raw.toLowerCase())) {
+        const friendly = "Your password reset link has expired or already been used. Please request a new one.";
+        setLinkError(friendly);
+        toast.error(friendly);
+      } else {
+        toast.error(raw);
+      }
     } finally {
       setLoading(false);
     }
@@ -79,7 +101,18 @@ const ResetPassword = () => {
           </div>
 
           <div className="glass rounded-2xl p-6 sm:p-8 space-y-5">
-            {!ready ? (
+            {linkError ? (
+              <div
+                role="alert"
+                data-testid="reset-link-error"
+                className="text-center text-sm space-y-3"
+              >
+                <p className="text-destructive font-medium">{linkError}</p>
+                <Link to="/forgot-password" className="text-primary hover:underline font-medium inline-block">
+                  Request a new link
+                </Link>
+              </div>
+            ) : !ready ? (
               <div className="text-center text-sm text-muted-foreground space-y-3">
                 <p>
                   This page must be opened from the password reset link sent to your email.

@@ -21,9 +21,16 @@ const GoogleButton = ({ label = "Continue with Google", redirectTo }: Props) => 
     setLoading(true);
     const loadingToast = toast.loading("Redirecting to Google...");
     try {
-      const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: redirectTo ?? window.location.origin,
-      });
+      // Test-only override: lets Playwright simulate cancel/provider errors
+      // without driving real Google OAuth. Production code path is unchanged.
+      const stub = (window as unknown as {
+        __lovableOAuthStub?: () => Promise<{ error?: { message: string }; redirected?: boolean }>;
+      }).__lovableOAuthStub;
+      const result = stub
+        ? await stub()
+        : await lovable.auth.signInWithOAuth("google", {
+            redirect_uri: redirectTo ?? window.location.origin,
+          });
       toast.dismiss(loadingToast);
       if (result.error) {
         const msg = (result.error.message || "").toLowerCase();
@@ -55,6 +62,7 @@ const GoogleButton = ({ label = "Continue with Google", redirectTo }: Props) => 
   return (
     <Button
       type="button"
+      data-testid="google-oauth-button"
       variant="outline"
       size="lg"
       onClick={handleClick}
