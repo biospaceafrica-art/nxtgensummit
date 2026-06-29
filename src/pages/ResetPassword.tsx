@@ -10,13 +10,27 @@ import { KeyRound } from "lucide-react";
 import nextgenLogo from "@/assets/nextgen-logo.png";
 import SEO from "@/components/SEO";
 
+// Password policy enforced both inline and at submit time.
+// Keep these regexes in sync with any backend rules.
+const PASSWORD_RULES = [
+  { id: "len", label: "At least 8 characters", test: (p: string) => p.length >= 8 },
+  { id: "upper", label: "One uppercase letter (A-Z)", test: (p: string) => /[A-Z]/.test(p) },
+  { id: "lower", label: "One lowercase letter (a-z)", test: (p: string) => /[a-z]/.test(p) },
+  { id: "num", label: "One number (0-9)", test: (p: string) => /\d/.test(p) },
+];
+
 const ResetPassword = () => {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
   const [ready, setReady] = useState(false);
   const [linkError, setLinkError] = useState<string | null>(null);
+  const [inlineError, setInlineError] = useState<string | null>(null);
   const navigate = useNavigate();
+
+  const ruleResults = PASSWORD_RULES.map((r) => ({ ...r, ok: r.test(password) }));
+  const allRulesPass = ruleResults.every((r) => r.ok);
+  const confirmMismatch = confirm.length > 0 && confirm !== password;
 
   // Supabase recovery flow: the link contains a hash with access_token + type=recovery.
   // The auth client picks it up automatically and emits PASSWORD_RECOVERY.
