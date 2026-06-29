@@ -65,12 +65,13 @@ const ResetPassword = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password.length < 8) {
-      toast.error("Password must be at least 8 characters.");
+    setInlineError(null);
+    if (!allRulesPass) {
+      setInlineError("Your password doesn't meet all the requirements yet.");
       return;
     }
     if (password !== confirm) {
-      toast.error("Passwords do not match.");
+      setInlineError("Passwords do not match.");
       return;
     }
     setLoading(true);
@@ -81,7 +82,12 @@ const ResetPassword = () => {
       navigate("/", { replace: true });
     } catch (err) {
       const raw = err instanceof Error ? err.message : "Could not update password.";
-      if (/expired|invalid|otp|jwt|token|session/i.test(raw.toLowerCase())) {
+      const lower = raw.toLowerCase();
+      if (/same.*password|new password should be different/i.test(lower)) {
+        setInlineError("Your new password must be different from your current one.");
+      } else if (/weak|short|at least|characters/i.test(lower)) {
+        setInlineError(raw);
+      } else if (/expired|invalid|otp|jwt|token|session/i.test(lower)) {
         const friendly = "Your password reset link has expired or already been used. Please request a new one.";
         setLinkError(friendly);
         toast.error(friendly);
