@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,11 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from "@/components/ui/table";
 import { Label } from "@/components/ui/label";
-import { Download, LogOut, Search, RefreshCw, Save, ChevronLeft, ChevronRight } from "lucide-react";
+import { Download, LogOut, Search, RefreshCw, Save, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 
 type Status = "pending" | "shortlisted" | "accepted" | "rejected" | "waitlist";
@@ -33,8 +31,9 @@ type Applicant = {
 };
 
 const STATUSES: Status[] = ["pending", "shortlisted", "accepted", "rejected", "waitlist"];
-const PAGE_SIZE = 25;
 const NOTES_MAX = 1000;
+const ROW_HEIGHT = 196; // estimated row height for virtualization
+const LIST_HEIGHT = 720; // visible scroll area height (px)
 
 const statusVariant = (s: Status) =>
   s === "accepted" ? "default"
@@ -54,7 +53,6 @@ const SelectionDashboard = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | Status>("all");
   const [reviewFilter, setReviewFilter] = useState<ReviewFilter>("all");
-  const [page, setPage] = useState(0);
   const [notesDraft, setNotesDraft] = useState<Record<string, string>>({});
   const [savingId, setSavingId] = useState<string | null>(null);
 
@@ -117,20 +115,9 @@ const SelectionDashboard = () => {
     });
   }, [applicants, search, statusFilter, reviewFilter]);
 
-  // Reset pagination when filters change
-  useEffect(() => { setPage(0); }, [search, statusFilter, reviewFilter]);
-
-  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const safePage = Math.min(page, pageCount - 1);
-  const paged = useMemo(
-    () => filtered.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE),
-    [filtered, safePage],
-  );
-
   const updateStatus = async (a: Applicant, status: Status) => {
     if (status === a.status) return;
     const prevStatus = a.status;
-    // Optimistic
     setApplicants((prev) =>
       prev.map((x) => (x.id === a.id ? { ...x, status } : x)),
     );
@@ -166,7 +153,7 @@ const SelectionDashboard = () => {
   const saveNotes = async (a: Applicant) => {
     const draft = notesDraft[a.id] ?? "";
     if (draft.length > NOTES_MAX) {
-      toast.error(`Notes are too long (${draft.length}/${NOTES_MAX}).`);
+      toast.error(`Notes exceed the ${NOTES_MAX}-character limit and cannot be saved.`);
       return;
     }
     setSavingId(a.id);
@@ -211,6 +198,9 @@ const SelectionDashboard = () => {
       const s = v == null ? "" : String(v);
       return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
     };
+    // Always exports the FULL filtered set, independent of any view paging
+    // or virtualized scroll position. The CSV is the source of truth for
+    // the reviewer's current filter selection.
     const csv = [
       headers.join(","),
       ...filtered.map((a) =>
@@ -238,6 +228,15 @@ const SelectionDashboard = () => {
     });
     return c;
   }, [applicants]);
+
+  // ===== Virtualization =====
+  const parentRef = useRef<HTMLDivElement>(null);
+  const virtualizer = useVirtualizer({
+    count: filtered.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => ROW_HEIGHT,
+    overscan: 6,
+  });
 
   if (!authReady) {
     return (
@@ -335,56 +334,82 @@ const SelectionDashboard = () => {
               </SelectContent>
             </Select>
           </div>
+          <div className="flex items-end text-xs text-muted-foreground">
+            Showing <span className="px-1 font-semibold text-foreground">{filtered.length}</span> /
+            <span className="pl-1">{applicants.length} applicants</span>
+          </div>
         </CardContent>
       </Card>
 
       <Card>
-        <CardContent className="p-0 overflow-x-auto">
+        <CardContent className="p-0">
           {loading ? (
             <div className="p-10 text-center text-muted-foreground">Loading…</div>
+          ) : filtered.length === 0 ? (
+            <div className="p-10 text-center text-muted-foreground">
+              No applicants match the current filters.
+            </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Applicant</TableHead>
-                  <TableHead>Contact</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Notes</TableHead>
-                  <TableHead>Reviewed</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {paged.map((a) => {
+            <div
+              ref={parentRef}
+              data-testid="virtual-scroll"
+              className="overflow-auto"
+              style={{ height: LIST_HEIGHT }}
+            >
+              <div
+                style={{
+                  height: virtualizer.getTotalSize(),
+                  position: "relative",
+                  width: "100%",
+                }}
+              >
+                {virtualizer.getVirtualItems().map((vi) => {
+                  const a = filtered[vi.index];
                   const draft = notesDraft[a.id];
                   const currentNotes = draft ?? a.notes ?? "";
                   const dirty = draft !== undefined && draft !== (a.notes ?? "");
                   const tooLong = currentNotes.length > NOTES_MAX;
                   return (
-                    <TableRow key={a.id} data-testid={`applicant-row-${a.id}`}>
-                      <TableCell className="font-medium align-top">{a.full_name}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground align-top">
+                    <div
+                      key={a.id}
+                      data-index={vi.index}
+                      ref={virtualizer.measureElement}
+                      data-testid={`applicant-row-${a.id}`}
+                      className="absolute left-0 right-0 border-b px-4 py-3 grid gap-3 md:grid-cols-[1.2fr_1.4fr_1fr_2fr_0.6fr]"
+                      style={{ transform: `translateY(${vi.start}px)` }}
+                    >
+                      <div>
+                        <div className="font-medium">{a.full_name}</div>
+                        <div className="text-[11px] text-muted-foreground">
+                          {new Date(a.created_at).toLocaleDateString()}
+                        </div>
+                      </div>
+                      <div className="text-sm text-muted-foreground">
                         <div>{a.email}</div>
                         {a.phone && <div>{a.phone}</div>}
-                      </TableCell>
-                      <TableCell className="align-top">
-                        <div className="flex flex-col gap-2">
-                          <Badge variant={statusVariant(a.status)} className="w-fit">{a.status}</Badge>
-                          <Select
-                            value={a.status}
-                            onValueChange={(v) => void updateStatus(a, v as Status)}
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <Badge variant={statusVariant(a.status)} className="w-fit">
+                          {a.status}
+                        </Badge>
+                        <Select
+                          value={a.status}
+                          onValueChange={(v) => void updateStatus(a, v as Status)}
+                        >
+                          <SelectTrigger
+                            className="w-[140px]"
+                            data-testid={`status-select-${a.id}`}
                           >
-                            <SelectTrigger className="w-[140px]" data-testid={`status-select-${a.id}`}>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {STATUSES.map((s) => (
-                                <SelectItem key={s} value={s}>{s}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </TableCell>
-                      <TableCell className="align-top min-w-[240px]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {STATUSES.map((s) => (
+                              <SelectItem key={s} value={s}>{s}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="min-w-[240px]">
                         <Textarea
                           value={currentNotes}
                           onChange={(e) =>
@@ -394,17 +419,31 @@ const SelectionDashboard = () => {
                           placeholder="Reviewer notes…"
                           data-testid={`notes-input-${a.id}`}
                           aria-invalid={tooLong}
-                          className={tooLong ? "border-destructive" : undefined}
+                          aria-describedby={`notes-help-${a.id}`}
+                          className={tooLong ? "border-destructive focus-visible:ring-destructive" : undefined}
                         />
-                        <div className="flex items-center justify-between mt-1">
-                          <span
-                            className={`text-[11px] ${
-                              tooLong ? "text-destructive" : "text-muted-foreground"
-                            }`}
-                            data-testid={`notes-counter-${a.id}`}
-                          >
-                            {currentNotes.length}/{NOTES_MAX}
-                          </span>
+                        <div
+                          id={`notes-help-${a.id}`}
+                          className="flex items-center justify-between mt-1 gap-2"
+                        >
+                          {tooLong ? (
+                            <span
+                              className="text-[11px] text-destructive flex items-center gap-1"
+                              data-testid={`notes-error-${a.id}`}
+                              role="alert"
+                            >
+                              <AlertCircle className="w-3 h-3" />
+                              Notes exceed the {NOTES_MAX}-character limit
+                              ({currentNotes.length}/{NOTES_MAX}).
+                            </span>
+                          ) : (
+                            <span
+                              className="text-[11px] text-muted-foreground"
+                              data-testid={`notes-counter-${a.id}`}
+                            >
+                              {currentNotes.length}/{NOTES_MAX}
+                            </span>
+                          )}
                           <Button
                             size="sm" variant="outline"
                             onClick={() => void saveNotes(a)}
@@ -415,56 +454,20 @@ const SelectionDashboard = () => {
                             {savingId === a.id ? "Saving…" : "Save"}
                           </Button>
                         </div>
-                      </TableCell>
-                      <TableCell className="text-xs text-muted-foreground align-top">
+                      </div>
+                      <div className="text-xs text-muted-foreground">
                         {a.reviewed_at
                           ? new Date(a.reviewed_at).toLocaleDateString()
                           : "—"}
-                      </TableCell>
-                    </TableRow>
+                      </div>
+                    </div>
                   );
                 })}
-                {filtered.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center text-muted-foreground py-10">
-                      No applicants match the current filters.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+              </div>
+            </div>
           )}
         </CardContent>
       </Card>
-
-      {filtered.length > 0 && (
-        <div
-          className="flex items-center justify-between mt-4 text-sm text-muted-foreground"
-          data-testid="pagination-bar"
-        >
-          <div>
-            Showing {safePage * PAGE_SIZE + 1}–
-            {Math.min(filtered.length, (safePage + 1) * PAGE_SIZE)} of {filtered.length}
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline" size="sm" data-testid="page-prev"
-              onClick={() => setPage((p) => Math.max(0, p - 1))}
-              disabled={safePage === 0}
-            >
-              <ChevronLeft className="w-4 h-4" /> Prev
-            </Button>
-            <span data-testid="page-indicator">Page {safePage + 1} / {pageCount}</span>
-            <Button
-              variant="outline" size="sm" data-testid="page-next"
-              onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}
-              disabled={safePage >= pageCount - 1}
-            >
-              Next <ChevronRight className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
