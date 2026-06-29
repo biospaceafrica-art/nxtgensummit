@@ -142,7 +142,7 @@ const ResetPassword = () => {
                 </Link>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4" noValidate>
                 <div className="space-y-2">
                   <Label htmlFor="password">New password</Label>
                   <Input
@@ -151,9 +151,22 @@ const ResetPassword = () => {
                     placeholder="Minimum 8 characters"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    aria-invalid={password.length > 0 && !allRulesPass}
+                    aria-describedby="password-rules"
                     required
-                    minLength={8}
                   />
+                  <ul id="password-rules" data-testid="password-rules" className="text-xs space-y-1 pt-1">
+                    {ruleResults.map((r) => (
+                      <li
+                        key={r.id}
+                        data-testid={`rule-${r.id}`}
+                        data-ok={r.ok ? "true" : "false"}
+                        className={r.ok ? "text-emerald-500" : "text-muted-foreground"}
+                      >
+                        {r.ok ? "✓" : "○"} {r.label}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="confirm">Confirm password</Label>
@@ -163,14 +176,29 @@ const ResetPassword = () => {
                     placeholder="Re-enter password"
                     value={confirm}
                     onChange={(e) => setConfirm(e.target.value)}
+                    aria-invalid={confirmMismatch}
+                    aria-describedby={confirmMismatch ? "confirm-error" : undefined}
                     required
-                    minLength={8}
                   />
+                  {confirmMismatch && (
+                    <p id="confirm-error" data-testid="confirm-error" className="text-xs text-destructive">
+                      Passwords do not match.
+                    </p>
+                  )}
                 </div>
+                {inlineError && (
+                  <p
+                    role="alert"
+                    data-testid="reset-inline-error"
+                    className="text-sm text-destructive"
+                  >
+                    {inlineError}
+                  </p>
+                )}
                 <Button
                   type="submit"
                   size="lg"
-                  disabled={loading}
+                  disabled={loading || !allRulesPass || confirmMismatch || confirm.length === 0}
                   className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-semibold"
                 >
                   <KeyRound className="w-4 h-4 mr-2" />
