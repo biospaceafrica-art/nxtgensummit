@@ -27,6 +27,9 @@ const Login = lazy(() => import("./pages/Login"));
 const Signup = lazy(() => import("./pages/Signup"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const SelectionDashboard = lazy(() => import("./pages/SelectionDashboard"));
+
+
 
 // Admin bundle (heaviest — strictly lazy + prefetchable)
 const adminImport = () => import("./pages/Admin");
@@ -84,6 +87,7 @@ const App = () => (
             <Route path="/signup" element={lazyRoute(Signup)} />
             <Route path="/forgot-password" element={lazyRoute(ForgotPassword)} />
             <Route path="/reset-password" element={lazyRoute(ResetPassword)} />
+            <Route path="/selection" element={lazyRoute(SelectionDashboard)} />
             <Route path="/admin/login" element={lazyRoute(AdminLogin)} />
             <Route path="/admin" element={lazyRoute(Admin)} />
             {/* Catch-all for any /admin/* sub-path: Admin handles auth + redirects
