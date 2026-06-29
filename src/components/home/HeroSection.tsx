@@ -36,8 +36,8 @@ const HeroSection = () => {
     return () => clearInterval(id);
   }, []);
 
-  // Load the background iframe shortly after mount so LCP paints first
-  // but the video reliably starts. Honors data-saver and reduced-motion.
+  // Mount the YouTube iframe shortly after first paint so LCP isn't blocked.
+  // Honors data-saver and prefers-reduced-motion — both stay on the poster.
   useEffect(() => {
     const conn = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
     if (conn?.saveData) return;
@@ -47,32 +47,55 @@ const HeroSection = () => {
       window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
     if (reduceMotion) return;
 
-    const id = window.setTimeout(() => setVideoLoaded(true), 600);
+    // Short delay (not gated on user interaction) so the hero text paints first
+    // but the video still mounts reliably for autoplay.
+    const id = window.setTimeout(() => setShouldLoadVideo(true), 250);
     return () => window.clearTimeout(id);
   }, []);
 
+  // If the iframe never reports "load" within 4s, treat it as failed and keep
+  // the poster visible instead of an empty black box.
+  useEffect(() => {
+    if (!shouldLoadVideo) return;
+    const id = window.setTimeout(() => {
+      setVideoFailed((prev) => prev || !document.querySelector<HTMLIFrameElement>(
+        "[data-testid='hero-video-iframe'][data-loaded='true']",
+      ));
+    }, 4000);
+    return () => window.clearTimeout(id);
+  }, [shouldLoadVideo]);
+
+  const showVideo = shouldLoadVideo && !videoFailed;
+
   return (
     <section ref={sectionRef} className="relative min-h-[100svh] flex items-center justify-center overflow-hidden">
-      {/* Poster image — instant, zero-JS, served from CDN */}
+      {/* Poster image — instant, zero-JS, served from CDN. Always present so it
+          remains as a fallback if the iframe fails to autoplay or load. */}
       <div
         className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: `url('${POSTER_URL}')` }}
         aria-hidden="true"
+        data-testid="hero-poster"
       />
       {/* Gradient fallback behind poster */}
       <div className="absolute inset-0 z-0 bg-gradient-to-br from-background via-secondary to-background opacity-60" />
 
-      {/* YouTube iframe — lazy-loaded via IntersectionObserver */}
-      {videoLoaded && (
+      {/* YouTube iframe — only mounted when allowed (no reduced motion / data saver) */}
+      {showVideo && (
         <div className="absolute inset-0 z-[1] overflow-hidden" data-testid="hero-video-wrapper">
           <iframe
             data-testid="hero-video-iframe"
             src={`https://www.youtube-nocookie.com/embed/${VIDEO_ID}?autoplay=1&mute=1&loop=1&playlist=${VIDEO_ID}&controls=0&showinfo=0&modestbranding=1&rel=0&playsinline=1&enablejsapi=0&iv_load_policy=3`}
             className="absolute w-[300%] h-[300%] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-            allow="autoplay; encrypted-media"
+            allow="autoplay; encrypted-media; picture-in-picture"
+            loading="eager"
+            referrerPolicy="origin"
+            onLoad={(e) => { e.currentTarget.setAttribute("data-loaded", "true"); }}
+            onError={() => setVideoFailed(true)}
             title="NextGen Summit 2026 background video"
           />
         </div>
+      )}
       )}
 
       {/* Overlays */}
