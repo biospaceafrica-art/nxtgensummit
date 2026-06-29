@@ -62,6 +62,7 @@ const GoogleButton = ({ label = "Continue with Google", redirectTo }: Props) => 
   return (
     <Button
       type="button"
+      data-testid="google-oauth-button"
       variant="outline"
       size="lg"
       onClick={handleClick}
