@@ -66,8 +66,14 @@ const ResetPassword = () => {
       toast.success("Password updated. You're signed in.");
       navigate("/", { replace: true });
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Could not update password.";
-      toast.error(msg);
+      const raw = err instanceof Error ? err.message : "Could not update password.";
+      if (/expired|invalid|otp|jwt|token|session/i.test(raw.toLowerCase())) {
+        const friendly = "Your password reset link has expired or already been used. Please request a new one.";
+        setLinkError(friendly);
+        toast.error(friendly);
+      } else {
+        toast.error(raw);
+      }
     } finally {
       setLoading(false);
     }
