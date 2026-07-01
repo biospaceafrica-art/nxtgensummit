@@ -67,16 +67,19 @@ const Navbar = () => {
       {open && (
         <div className="lg:hidden glass border-t border-border">
           <div className="container py-6 flex flex-col gap-4">
-            {navLinks.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                onClick={() => setOpen(false)}
-                className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors py-2"
-              >
-                {link.label}
-              </a>
-            ))}
+            {navLinks.map((link) => {
+              const isHash = link.href.includes("#");
+              const classes = "text-sm font-medium text-muted-foreground hover:text-primary transition-colors py-2";
+              return isHash ? (
+                <a key={link.label} href={link.href} onClick={() => setOpen(false)} className={classes}>
+                  {link.label}
+                </a>
+              ) : (
+                <Link key={link.label} to={link.href} onClick={() => setOpen(false)} className={classes}>
+                  {link.label}
+                </Link>
+              );
+            })}
             <Link to="/login" onClick={() => setOpen(false)}>
               <Button variant="outline" className="w-full">Sign In</Button>
             </Link>
