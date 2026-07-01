@@ -28,18 +28,22 @@ const Navbar = () => {
 
         {/* Desktop */}
         <div className="hidden lg:flex items-center gap-8">
-          {navLinks.map((link) => (
-            <a
-              key={link.label}
-              href={link.href}
-              className={cn(
-                "text-sm font-medium transition-colors hover:text-primary",
-                location.pathname === link.href ? "text-primary" : "text-muted-foreground"
-              )}
-            >
-              {link.label}
-            </a>
-          ))}
+          {navLinks.map((link) => {
+            const isHash = link.href.includes("#");
+            const classes = cn(
+              "text-sm font-medium transition-colors hover:text-primary",
+              location.pathname === link.href ? "text-primary" : "text-muted-foreground"
+            );
+            return isHash ? (
+              <a key={link.label} href={link.href} className={classes}>
+                {link.label}
+              </a>
+            ) : (
+              <Link key={link.label} to={link.href} className={classes}>
+                {link.label}
+              </Link>
+            );
+          })}
         </div>
 
         <div className="hidden lg:flex items-center gap-3">
