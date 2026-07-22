@@ -28,6 +28,7 @@ const Signup = lazy(() => import("./pages/Signup"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const SelectionDashboard = lazy(() => import("./pages/SelectionDashboard"));
+const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
 
 
 
@@ -88,6 +89,7 @@ const App = () => (
             <Route path="/forgot-password" element={lazyRoute(ForgotPassword)} />
             <Route path="/reset-password" element={lazyRoute(ResetPassword)} />
             <Route path="/selection" element={lazyRoute(SelectionDashboard)} />
+            <Route path="/.lovable/oauth/consent" element={lazyRoute(OAuthConsent)} />
             <Route path="/admin/login" element={lazyRoute(AdminLogin)} />
             <Route path="/admin" element={lazyRoute(Admin)} />
             {/* Catch-all for any /admin/* sub-path: Admin handles auth + redirects
