@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,12 +17,15 @@ const Signup = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const rawNext = searchParams.get("next");
+  const nextPath = rawNext && rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : null;
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) navigate("/", { replace: true });
+      if (session?.user) navigate(nextPath ?? "/", { replace: true });
     });
-  }, [navigate]);
+  }, [navigate, nextPath]);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,13 +39,13 @@ const Signup = () => {
         email,
         password,
         options: {
-          emailRedirectTo: window.location.origin,
+          emailRedirectTo: nextPath ? `${window.location.origin}${nextPath}` : window.location.origin,
           data: { full_name: fullName },
         },
       });
       if (error) throw error;
       toast.success("Account created! Check your email to confirm.");
-      navigate("/login");
+      navigate(nextPath ? `/login?next=${encodeURIComponent(nextPath)}` : "/login");
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Sign up failed.";
       toast.error(msg);
@@ -71,7 +74,7 @@ const Signup = () => {
           </div>
 
           <div className="glass rounded-2xl p-6 sm:p-8 space-y-5">
-            <GoogleButton label="Sign up with Google" />
+            <GoogleButton label="Sign up with Google" redirectTo={nextPath ? `${window.location.origin}/login?next=${encodeURIComponent(nextPath)}` : undefined} />
 
             <div className="flex items-center gap-3">
               <div className="h-px flex-1 bg-border" />
