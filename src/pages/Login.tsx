@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,10 +16,18 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const rawNext = searchParams.get("next");
+  // Only accept same-origin relative paths to avoid open-redirect abuse.
+  const nextPath = rawNext && rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : null;
 
   useEffect(() => {
     let cancelled = false;
     const routeByRole = async (accessToken: string) => {
+      if (nextPath) {
+        navigate(nextPath, { replace: true });
+        return;
+      }
       try {
         const res = await supabase.functions.invoke("check-admin", {
           headers: { Authorization: `Bearer ${accessToken}` },
@@ -40,7 +48,7 @@ const Login = () => {
       cancelled = true;
       sub.subscription.unsubscribe();
     };
-  }, [navigate]);
+  }, [navigate, nextPath]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,7 +86,7 @@ const Login = () => {
           </div>
 
           <div className="glass rounded-2xl p-6 sm:p-8 space-y-5">
-            <GoogleButton label="Sign in with Google" />
+            <GoogleButton label="Sign in with Google" redirectTo={nextPath ? `${window.location.origin}/login?next=${encodeURIComponent(nextPath)}` : undefined} />
 
             <div className="flex items-center gap-3">
               <div className="h-px flex-1 bg-border" />
