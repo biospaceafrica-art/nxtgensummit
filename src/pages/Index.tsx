@@ -13,7 +13,7 @@ const Index = () => (
   <>
     <SEO
       title="NextGen Summit 2026 — Faith-Driven Leadership in Africa"
-      description="Africa's premier faith-driven business and career leadership summit. Join 2,000+ delegates June 20, 2026 in Abuja, Nigeria."
+      description="Africa's premier faith-driven business and career leadership summit. Join 2,000+ delegates October 17, 2026 in Abuja, Nigeria."
       path="/"
     />
     <HeroSection />
