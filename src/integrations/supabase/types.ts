@@ -336,6 +336,7 @@ export type Database = {
           phone: string | null
           selected_course: string | null
           updated_at: string
+          user_id: string | null
           whatsapp_group_assigned: string | null
         }
         Insert: {
@@ -350,6 +351,7 @@ export type Database = {
           phone?: string | null
           selected_course?: string | null
           updated_at?: string
+          user_id?: string | null
           whatsapp_group_assigned?: string | null
         }
         Update: {
@@ -364,6 +366,7 @@ export type Database = {
           phone?: string | null
           selected_course?: string | null
           updated_at?: string
+          user_id?: string | null
           whatsapp_group_assigned?: string | null
         }
         Relationships: []
