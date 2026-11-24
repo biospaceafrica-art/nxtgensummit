@@ -19,7 +19,7 @@ const Login = () => {
   const [searchParams] = useSearchParams();
   const rawNext = searchParams.get("next");
   // Only accept same-origin relative paths to avoid open-redirect abuse.
-  const nextPath = rawNext && rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : null;
+  const nextPath = rawNext && rawNext.startsWith("/") && !rawNext.startsWith("//") && !/[\\\u0000-\u001f]/.test(rawNext) ? rawNext : null;
 
   useEffect(() => {
     let cancelled = false;

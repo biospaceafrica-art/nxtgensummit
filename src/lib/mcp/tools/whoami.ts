@@ -1,5 +1,5 @@
-declare const process: { env: Record<string, string | undefined> };
 import { defineTool } from "@lovable.dev/mcp-js";
+import { authorize, getRoles, READ_LIMIT, toolJson } from "../guards";
 
 export default defineTool({
   name: "whoami",
@@ -8,23 +8,9 @@ export default defineTool({
   inputSchema: {},
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async (_input, ctx) => {
-    if (!ctx.isAuthenticated()) {
-      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
-    }
-    const { createClient } = await import("@supabase/supabase-js");
-    const sb = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_PUBLISHABLE_KEY!, {
-      global: { headers: { Authorization: `Bearer ${ctx.getToken()}` } },
-      auth: { persistSession: false, autoRefreshToken: false },
-    });
-    const { data: roles } = await sb.from("user_roles").select("role").eq("user_id", ctx.getUserId());
-    const payload = {
-      user_id: ctx.getUserId(),
-      email: ctx.getUserEmail(),
-      roles: (roles ?? []).map((r) => r.role),
-    };
-    return {
-      content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
-      structuredContent: payload,
-    };
+    const denied = await authorize(ctx, "whoami", { rate: READ_LIMIT });
+    if (denied) return denied;
+    const payload = { user_id: ctx.getUserId(), email: ctx.getUserEmail(), roles: await getRoles(ctx) };
+    return toolJson(payload, payload);
   },
 });

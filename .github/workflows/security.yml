@@ -1,0 +1,33 @@
+name: Security audit
+
+on:
+  push: { branches: ["main"] }
+  pull_request: { branches: ["main"] }
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+jobs:
+  audit:
+    name: Dependency audit (fail on high/critical)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: "npm" }
+      - run: npm ci --legacy-peer-deps
+      - run: npm audit --omit=dev --audit-level=high
+
+  security-e2e:
+    name: OWASP & security regression e2e
+    runs-on: ubuntu-latest
+    needs: audit
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: "npm" }
+      - run: npm ci --legacy-peer-deps
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+        env: { CI: false }
+      - run: npx playwright test e2e/owasp-security.spec.ts e2e/security-regression.spec.ts

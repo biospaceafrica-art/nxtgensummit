@@ -7,6 +7,115 @@ import { auth, defineMcp } from "npm:@lovable.dev/mcp-js@0.24.0";
 
 // src/lib/mcp/tools/whoami.ts
 import { defineTool } from "npm:@lovable.dev/mcp-js@0.24.0";
+
+// src/lib/mcp/guards.ts
+import { createClient } from "npm:@supabase/supabase-js@^2.96.0";
+function runtimeEnv(name) {
+  const runtime = globalThis;
+  return runtime.Deno?.env?.get?.(name) ?? runtime.process?.env?.[name];
+}
+function configuredEnv(names) {
+  for (const name of names) {
+    const value = runtimeEnv(name)?.trim();
+    if (value) return value;
+  }
+  return void 0;
+}
+function supabaseProjectUrl() {
+  const url = configuredEnv(["SUPABASE_URL", "VITE_SUPABASE_URL"]);
+  if (!url) throw new Error("SUPABASE_URL (or VITE_SUPABASE_URL) is required");
+  return url;
+}
+function supabasePublishableKey() {
+  const direct = configuredEnv(["SUPABASE_PUBLISHABLE_KEY", "VITE_SUPABASE_PUBLISHABLE_KEY"]);
+  if (direct) return direct;
+  const keyset = runtimeEnv("SUPABASE_PUBLISHABLE_KEYS");
+  if (keyset) {
+    try {
+      const parsed = JSON.parse(keyset);
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+        const keys = parsed;
+        const key = [keys.default, ...Object.values(keys)].find((v) => typeof v === "string" && v.trim().startsWith("sb_publishable_"))?.trim();
+        if (key) return key;
+      }
+    } catch {
+    }
+  }
+  const legacy = configuredEnv(["SUPABASE_ANON_KEY", "VITE_SUPABASE_ANON_KEY"]);
+  if (legacy) return legacy;
+  throw new Error("SUPABASE_PUBLISHABLE_KEY, SUPABASE_PUBLISHABLE_KEYS, or SUPABASE_ANON_KEY is required");
+}
+function supabaseForUser(ctx) {
+  const token = ctx.getToken();
+  if (!token) throw new Error("supabaseForUser requires a verified OAuth token");
+  return createClient(supabaseProjectUrl(), supabasePublishableKey(), {
+    global: { headers: { Authorization: `Bearer ${token}` } },
+    auth: { persistSession: false, autoRefreshToken: false }
+  });
+}
+function toolError(message) {
+  return { content: [{ type: "text", text: message }], isError: true };
+}
+function toolJson(payload, structured) {
+  return {
+    content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+    structuredContent: structured
+  };
+}
+var buckets = /* @__PURE__ */ new Map();
+var MAX_BUCKETS = 5e3;
+var READ_LIMIT = { limit: 30, windowMs: 6e4 };
+var WRITE_LIMIT = { limit: 10, windowMs: 6e4 };
+function checkRateLimit(ctx, tool, rule) {
+  const identity = `${ctx.getUserId() ?? "anon"}:${ctx.getClientId?.() ?? "unknown"}`;
+  const key = `${identity}:${tool}`;
+  const now = Date.now();
+  const hits = (buckets.get(key) ?? []).filter((t) => now - t < rule.windowMs);
+  if (hits.length >= rule.limit) {
+    const retryIn = Math.ceil((rule.windowMs - (now - hits[0])) / 1e3);
+    return toolError(
+      `Rate limit exceeded for \`${tool}\` (${rule.limit} calls / ${rule.windowMs / 1e3}s). Retry in ~${retryIn}s.`
+    );
+  }
+  hits.push(now);
+  if (buckets.size > MAX_BUCKETS) buckets.clear();
+  buckets.set(key, hits);
+  return null;
+}
+async function getRoles(ctx) {
+  const sb = supabaseForUser(ctx);
+  const { data } = await sb.from("user_roles").select("role").eq("user_id", ctx.getUserId());
+  return (data ?? []).map((r) => r.role);
+}
+async function authorize(ctx, tool, opts) {
+  if (!ctx.isAuthenticated() || !ctx.getUserId() || !ctx.getToken()) {
+    return toolError("Not authenticated. Connect this app over OAuth and sign in first.");
+  }
+  const limited = checkRateLimit(ctx, tool, opts.rate);
+  if (limited) return limited;
+  if (opts.anyOfRoles?.length) {
+    let roles;
+    try {
+      roles = await getRoles(ctx);
+    } catch {
+      return toolError("Could not verify your permissions. Try again.");
+    }
+    if (!opts.anyOfRoles.some((r) => roles.includes(r))) {
+      return toolError(`Forbidden: this tool requires one of the roles: ${opts.anyOfRoles.join(", ")}.`);
+    }
+  }
+  return null;
+}
+var CONTROL_CHARS = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g;
+function sanitizeText(value) {
+  return value.replace(CONTROL_CHARS, "").trim();
+}
+var UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+function isUuid(value) {
+  return UUID_RE.test(value);
+}
+
+// src/lib/mcp/tools/whoami.ts
 var whoami_default = defineTool({
   name: "whoami",
   title: "Who am I",
@@ -14,24 +123,10 @@ var whoami_default = defineTool({
   inputSchema: {},
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async (_input, ctx) => {
-    if (!ctx.isAuthenticated()) {
-      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
-    }
-    const { createClient } = await import("npm:@supabase/supabase-js@^2.96.0");
-    const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_PUBLISHABLE_KEY, {
-      global: { headers: { Authorization: `Bearer ${ctx.getToken()}` } },
-      auth: { persistSession: false, autoRefreshToken: false }
-    });
-    const { data: roles } = await sb.from("user_roles").select("role").eq("user_id", ctx.getUserId());
-    const payload = {
-      user_id: ctx.getUserId(),
-      email: ctx.getUserEmail(),
-      roles: (roles ?? []).map((r) => r.role)
-    };
-    return {
-      content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
-      structuredContent: payload
-    };
+    const denied = await authorize(ctx, "whoami", { rate: READ_LIMIT });
+    if (denied) return denied;
+    const payload = { user_id: ctx.getUserId(), email: ctx.getUserEmail(), roles: await getRoles(ctx) };
+    return toolJson(payload, payload);
   }
 });
 
@@ -44,52 +139,38 @@ var list_my_registrations_default = defineTool2({
   inputSchema: {},
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async (_input, ctx) => {
-    if (!ctx.isAuthenticated()) {
-      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
-    }
-    const { createClient } = await import("npm:@supabase/supabase-js@^2.96.0");
-    const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_PUBLISHABLE_KEY, {
-      global: { headers: { Authorization: `Bearer ${ctx.getToken()}` } },
-      auth: { persistSession: false, autoRefreshToken: false }
-    });
-    const { data, error } = await sb.from("registrations").select("*").order("created_at", { ascending: false });
-    if (error) return { content: [{ type: "text", text: error.message }], isError: true };
-    return {
-      content: [{ type: "text", text: JSON.stringify(data ?? [], null, 2) }],
-      structuredContent: { registrations: data ?? [] }
-    };
+    const denied = await authorize(ctx, "list_my_registrations", { rate: READ_LIMIT });
+    if (denied) return denied;
+    const { data, error } = await supabaseForUser(ctx).from("registrations").select("id, full_name, fellowship_track, current_status, selected_course, payment_confirmed, created_at").eq("user_id", ctx.getUserId()).order("created_at", { ascending: false }).limit(50);
+    if (error) return toolError("Could not load registrations.");
+    return toolJson(data ?? [], { registrations: data ?? [] });
   }
 });
 
 // src/lib/mcp/tools/list-scholarship-applicants.ts
 import { defineTool as defineTool3 } from "npm:@lovable.dev/mcp-js@0.24.0";
 import { z } from "npm:zod@^3.25.76";
+var STATUSES = ["pending", "shortlisted", "accepted", "rejected", "waitlist"];
 var list_scholarship_applicants_default = defineTool3({
   name: "list_scholarship_applicants",
   title: "List scholarship applicants",
-  description: "List scholarship applicants (admin or selection_team only, enforced by RLS). Optional status filter.",
+  description: "List scholarship applicants (admin or selection_team only). Optional status filter.",
   inputSchema: {
-    status: z.enum(["pending", "shortlisted", "accepted", "rejected", "waitlist"]).optional().describe("Filter by review status."),
-    limit: z.number().int().positive().max(500).optional().describe("Max rows (default 100).")
+    status: z.enum(STATUSES).optional().describe("Filter by review status."),
+    limit: z.number().int().min(1).max(200).optional().describe("Max rows (default 50, max 200).")
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async ({ status, limit }, ctx) => {
-    if (!ctx.isAuthenticated()) {
-      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
-    }
-    const { createClient } = await import("npm:@supabase/supabase-js@^2.96.0");
-    const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_PUBLISHABLE_KEY, {
-      global: { headers: { Authorization: `Bearer ${ctx.getToken()}` } },
-      auth: { persistSession: false, autoRefreshToken: false }
+    const denied = await authorize(ctx, "list_scholarship_applicants", {
+      rate: READ_LIMIT,
+      anyOfRoles: ["admin", "selection_team"]
     });
-    let q = sb.from("scholarship_applicants").select("*").order("created_at", { ascending: false }).limit(limit ?? 100);
+    if (denied) return denied;
+    let q = supabaseForUser(ctx).from("scholarship_applicants").select("id, full_name, email, status, notes, reviewed_at, created_at").order("created_at", { ascending: false }).limit(limit ?? 50);
     if (status) q = q.eq("status", status);
     const { data, error } = await q;
-    if (error) return { content: [{ type: "text", text: error.message }], isError: true };
-    return {
-      content: [{ type: "text", text: JSON.stringify(data ?? [], null, 2) }],
-      structuredContent: { applicants: data ?? [] }
-    };
+    if (error) return toolError("Could not load applicants.");
+    return toolJson(data ?? [], { applicants: data ?? [] });
   }
 });
 
@@ -99,46 +180,43 @@ import { z as z2 } from "npm:zod@^3.25.76";
 var update_applicant_status_default = defineTool4({
   name: "update_applicant_status",
   title: "Update applicant status",
-  description: "Update a scholarship applicant's review status and optional notes. Requires admin or selection_team role (enforced by RLS).",
+  description: "Update a scholarship applicant's review status and optional notes. Requires admin or selection_team role.",
   inputSchema: {
     applicant_id: z2.string().uuid().describe("Applicant row id."),
     status: z2.enum(["pending", "shortlisted", "accepted", "rejected", "waitlist"]),
-    notes: z2.string().optional().describe("Reviewer notes (max 1000 chars).")
+    notes: z2.string().max(1e3).optional().describe("Reviewer notes (max 1000 chars).")
   },
   annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
   handler: async ({ applicant_id, status, notes }, ctx) => {
-    if (!ctx.isAuthenticated()) {
-      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
-    }
-    if (notes && notes.length > 1e3) {
-      return { content: [{ type: "text", text: "Notes exceed 1000-character limit" }], isError: true };
-    }
-    const { createClient } = await import("npm:@supabase/supabase-js@^2.96.0");
-    const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_PUBLISHABLE_KEY, {
-      global: { headers: { Authorization: `Bearer ${ctx.getToken()}` } },
-      auth: { persistSession: false, autoRefreshToken: false }
+    const denied = await authorize(ctx, "update_applicant_status", {
+      rate: WRITE_LIMIT,
+      anyOfRoles: ["admin", "selection_team"]
     });
+    if (denied) return denied;
+    if (!isUuid(applicant_id)) return toolError("Invalid applicant_id.");
     const patch = {
       status,
       reviewed_by: ctx.getUserId(),
       reviewed_at: (/* @__PURE__ */ new Date()).toISOString()
     };
-    if (notes !== void 0) patch.notes = notes;
-    const { data, error } = await sb.from("scholarship_applicants").update(patch).eq("id", applicant_id).select().maybeSingle();
-    if (error) return { content: [{ type: "text", text: error.message }], isError: true };
-    return {
-      content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
-      structuredContent: { applicant: data }
-    };
+    if (notes !== void 0) {
+      const clean = sanitizeText(notes);
+      if (clean.length > 1e3) return toolError("Notes exceed 1000-character limit");
+      patch.notes = clean;
+    }
+    const { data, error } = await supabaseForUser(ctx).from("scholarship_applicants").update(patch).eq("id", applicant_id).select("id, full_name, status, notes, reviewed_at").maybeSingle();
+    if (error) return toolError("Update rejected by access rules.");
+    if (!data) return toolError("Applicant not found or not permitted.");
+    return toolJson(data, { applicant: data });
   }
 });
 
 // src/lib/mcp/index.ts
 var projectRef = "ypcoludurdfinazcxylj";
 var mcp_default = defineMcp({
-  name: "nextgen-summit-mcp",
-  title: "NextGen Summit MCP",
-  version: "0.1.0",
+  name: "next-generation-summit",
+  title: "NEXT GENERATION SUMMIT",
+  version: "0.2.0",
   instructions: "Tools for NextGen Summit 2026. Use `whoami` to inspect your session, `list_my_registrations` for your own registrations, and (admin/selection_team only) `list_scholarship_applicants` / `update_applicant_status` for scholarship review.",
   auth: auth.oauth.issuer({
     issuer: `https://${projectRef}.supabase.co/auth/v1`,

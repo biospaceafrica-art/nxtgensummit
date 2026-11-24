@@ -1,36 +1,32 @@
-declare const process: { env: Record<string, string | undefined> };
 import { defineTool } from "@lovable.dev/mcp-js";
 import { z } from "zod";
+import { authorize, READ_LIMIT, supabaseForUser, toolError, toolJson } from "../guards";
+
+const STATUSES = ["pending", "shortlisted", "accepted", "rejected", "waitlist"] as const;
 
 export default defineTool({
   name: "list_scholarship_applicants",
   title: "List scholarship applicants",
-  description:
-    "List scholarship applicants (admin or selection_team only, enforced by RLS). Optional status filter.",
+  description: "List scholarship applicants (admin or selection_team only). Optional status filter.",
   inputSchema: {
-    status: z
-      .enum(["pending", "shortlisted", "accepted", "rejected", "waitlist"])
-      .optional()
-      .describe("Filter by review status."),
-    limit: z.number().int().positive().max(500).optional().describe("Max rows (default 100)."),
+    status: z.enum(STATUSES).optional().describe("Filter by review status."),
+    limit: z.number().int().min(1).max(200).optional().describe("Max rows (default 50, max 200)."),
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async ({ status, limit }, ctx) => {
-    if (!ctx.isAuthenticated()) {
-      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
-    }
-    const { createClient } = await import("@supabase/supabase-js");
-    const sb = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_PUBLISHABLE_KEY!, {
-      global: { headers: { Authorization: `Bearer ${ctx.getToken()}` } },
-      auth: { persistSession: false, autoRefreshToken: false },
+    const denied = await authorize(ctx, "list_scholarship_applicants", {
+      rate: READ_LIMIT,
+      anyOfRoles: ["admin", "selection_team"],
     });
-    let q = sb.from("scholarship_applicants").select("*").order("created_at", { ascending: false }).limit(limit ?? 100);
+    if (denied) return denied;
+    let q = supabaseForUser(ctx)
+      .from("scholarship_applicants")
+      .select("id, full_name, email, status, notes, reviewed_at, created_at")
+      .order("created_at", { ascending: false })
+      .limit(limit ?? 50);
     if (status) q = q.eq("status", status);
     const { data, error } = await q;
-    if (error) return { content: [{ type: "text", text: error.message }], isError: true };
-    return {
-      content: [{ type: "text", text: JSON.stringify(data ?? [], null, 2) }],
-      structuredContent: { applicants: data ?? [] },
-    };
+    if (error) return toolError("Could not load applicants.");
+    return toolJson(data ?? [], { applicants: data ?? [] });
   },
 });

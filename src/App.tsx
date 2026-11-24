@@ -84,7 +84,6 @@ const App = () => (
             <Route path="/badge" element={lazyRoute(Badge)} />
             <Route path="/check-in" element={lazyRoute(CheckIn)} />
             <Route path="/login" element={lazyRoute(Login)} />
-            <Route path="/login" element={lazyRoute(Login)} />
             <Route path="/signup" element={lazyRoute(Signup)} />
             <Route path="/forgot-password" element={lazyRoute(ForgotPassword)} />
             <Route path="/reset-password" element={lazyRoute(ResetPassword)} />

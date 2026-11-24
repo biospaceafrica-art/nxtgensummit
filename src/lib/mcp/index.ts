@@ -11,9 +11,9 @@ import updateApplicantStatusTool from "./tools/update-applicant-status";
 const projectRef = import.meta.env.VITE_SUPABASE_PROJECT_ID ?? "project-ref-unset";
 
 export default defineMcp({
-  name: "nextgen-summit-mcp",
-  title: "NextGen Summit MCP",
-  version: "0.1.0",
+  name: "next-generation-summit",
+  title: "NEXT GENERATION SUMMIT",
+  version: "0.2.0",
   instructions:
     "Tools for NextGen Summit 2026. Use `whoami` to inspect your session, `list_my_registrations` for your own registrations, and (admin/selection_team only) `list_scholarship_applicants` / `update_applicant_status` for scholarship review.",
   auth: auth.oauth.issuer({

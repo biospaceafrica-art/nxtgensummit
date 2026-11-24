@@ -1,5 +1,5 @@
-declare const process: { env: Record<string, string | undefined> };
 import { defineTool } from "@lovable.dev/mcp-js";
+import { authorize, READ_LIMIT, supabaseForUser, toolError, toolJson } from "../guards";
 
 export default defineTool({
   name: "list_my_registrations",
@@ -8,22 +8,15 @@ export default defineTool({
   inputSchema: {},
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async (_input, ctx) => {
-    if (!ctx.isAuthenticated()) {
-      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
-    }
-    const { createClient } = await import("@supabase/supabase-js");
-    const sb = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_PUBLISHABLE_KEY!, {
-      global: { headers: { Authorization: `Bearer ${ctx.getToken()}` } },
-      auth: { persistSession: false, autoRefreshToken: false },
-    });
-    const { data, error } = await sb
+    const denied = await authorize(ctx, "list_my_registrations", { rate: READ_LIMIT });
+    if (denied) return denied;
+    const { data, error } = await supabaseForUser(ctx)
       .from("registrations")
-      .select("*")
-      .order("created_at", { ascending: false });
-    if (error) return { content: [{ type: "text", text: error.message }], isError: true };
-    return {
-      content: [{ type: "text", text: JSON.stringify(data ?? [], null, 2) }],
-      structuredContent: { registrations: data ?? [] },
-    };
+      .select("id, full_name, fellowship_track, current_status, selected_course, payment_confirmed, created_at")
+      .eq("user_id", ctx.getUserId())
+      .order("created_at", { ascending: false })
+      .limit(50);
+    if (error) return toolError("Could not load registrations.");
+    return toolJson(data ?? [], { registrations: data ?? [] });
   },
 });
